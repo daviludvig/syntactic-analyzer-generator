@@ -1,0 +1,8 @@
+PR:== beg|func|ret|end
+SEMICOLON:== ;
+COMMA:== ,
+ARROW:== ->
+MATH:== -|/
+NUM:== [0-9]+
+ID:== [a-zA-Z]([a-zA-Z]|[0-9])*
+ID_COM_NUMERO_ANTES:== <NUM> <ID>

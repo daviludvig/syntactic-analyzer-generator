@@ -1,0 +1,7 @@
+beg main;
+func menos -> x -> y;
+  ret x - y;
+func div -> x -> y;
+  ret x / y;
+end;
+123 identificador
