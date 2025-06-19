@@ -119,27 +119,31 @@ def get_regex_from_file(file_path: str) -> list[TokenType]:
 def resolve_references_add_concats(tokentypes_without_concat: list[TokenType]) -> list[TokenType]:
     token_map = {t.name: t for t in tokentypes_without_concat}
 
-    tokentypes_with_concat = []
-
-    for tokentype_without_concat in tokentypes_without_concat:
+    def expand_token_list(tokens: list[RegexToken], visited: set[str]) -> list[RegexToken]:
         resolved = []
-        for token in tokentype_without_concat.regex:
+        for token in tokens:
             if token.type == RegexToken.REF:
                 ref_name = token.value
                 if ref_name not in token_map:
                     raise ValueError(f"Referência <{ref_name}> não encontrada.")
-
-                # Copia da regex referida com parênteses
+                if ref_name in visited:
+                    raise ValueError(f"Referência cíclica detectada: {' → '.join(visited)} → {ref_name}")
+                
+                # Expande recursivamente a referência
+                sub_tokens = expand_token_list(token_map[ref_name].regex, visited | {ref_name})
                 resolved.append(RegexToken(RegexToken.LPAREN))
-                for sub_token in token_map[ref_name].regex:
-                    resolved.append(sub_token)
+                resolved.extend(sub_tokens)
                 resolved.append(RegexToken(RegexToken.RPAREN))
-
             else:
                 resolved.append(token)
-        tokentype_without_concat.regex = resolved
-        
-        tokentypes_with_concat.append(tokentype_without_concat.copy())
-        tokentypes_with_concat[-1].regex = insert_concatenation(tokentype_without_concat.regex)
-        
-    return tokentypes_with_concat
+        return resolved
+
+    resolved_tokentypes = []
+    for tokentype in tokentypes_without_concat:
+        expanded_tokens = expand_token_list(tokentype.regex, {tokentype.name})
+        with_concats = insert_concatenation(expanded_tokens)
+        resolved_token = tokentype.copy()
+        resolved_token.regex = with_concats
+        resolved_tokentypes.append(resolved_token)
+
+    return resolved_tokentypes
