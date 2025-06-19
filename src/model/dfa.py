@@ -15,7 +15,9 @@ class DFA(FA):
         # Analisa cada simbolo da entrada
         current_state = self.initial_state
         for symbol in input_str:
+            print(f"Current state: {current_state.name} (is initial {current_state.is_initial}, is final {current_state.is_final}), Input symbol: {symbol}")
             if symbol not in self.alphabet:
+                print(f"Symbol '{symbol}' not in alphabet {self.alphabet}.")
                 return False
 
             # Procura a transição correspondente ao símbolo atual
@@ -26,9 +28,11 @@ class DFA(FA):
                     found = True
                     break
             if not found:
+                print(f"No transition found for symbol '{symbol}' from state '{current_state.name}'")
                 return False
             
         # Verifica se o estado final alcançado é um estado final
+        print(f"Final state reached: {current_state.name}")
         return current_state.is_final
     
     

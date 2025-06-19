@@ -26,6 +26,8 @@ def main():
         nfa_ = NFAFromRegex(postfix_).build()
         dfa_ = nfa_to_dfa.NFAtoDFA(nfa_)
         dfa_.name = tokentype.name
+        # print(f"{dfa_.name} Is 'func menos -> x -> y;' valid? {dfa_.isValidInput('func menos -> x -> y;')}")
+        # print(f"DFA {dfa_.name} alphabet: {dfa_.alphabet} has {len(dfa_.states)} states and {len(dfa_.transitions)} transitions")
         dfas.append(dfa_)
 
     # Realiza a união de todos os DFAs, começando com o primeiro DFA

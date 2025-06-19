@@ -25,6 +25,7 @@ def tokenize_regex(regex: str) -> list[RegexToken]:
     i = 0
     while i < len(regex):
         c = regex[i]
+        print(f"Processando caractere: {c} (índice {i})")
 
         if c in {'*', '+', '?', '|', '(', ')'}:
             tokens.append(RegexToken(c))
@@ -69,6 +70,7 @@ def tokenize_regex(regex: str) -> list[RegexToken]:
                 raise ValueError("Caractere de escape ao final de um padrão.")
 
         else:
+            print(f">> Caractere não especial: {c} index {i}")
             tokens.append(RegexToken(RegexToken.CHAR, c))
             i += 1
 

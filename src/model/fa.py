@@ -94,6 +94,7 @@ class FA(ABC):
     def __repr__(self) -> str:
         return (
             f"<{self.__class__.__name__}(\n"
+            f" Name: {self.name},\n"
             f"  States: {[state.name for state in self.states]},\n"
             f"  Initial: {self.initial_state.name if self.initial_state else None},\n"
             f"  Finals: {[state.name for state in self.final_states]},\n"

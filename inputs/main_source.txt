@@ -1,7 +1,1 @@
-beg main;
-func menos -> x -> y;
-  ret x - y;
-func div -> x -> y;
-  ret x / y;
-end;
-123identificador
+int soma(int a, int b)

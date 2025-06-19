@@ -60,6 +60,7 @@ def _get_tokens(source_code : str, dfas : List[DFA], symbol_table : SymbolTable)
         
         # Adiciona o caractere atual ao lexema
         lexeme_obj.increase(source_code[i])
+        print(f"Lexema atual: {lexeme_obj.get()}")
         # Se o lexema não for mais válido no DFA principal, verifica se é um erro ou define sua categoria
         if not dfas[0].isValidInput(lexeme_obj.get()):
             
@@ -84,6 +85,8 @@ def _get_tokens(source_code : str, dfas : List[DFA], symbol_table : SymbolTable)
             _add_token(lexeme_obj, dfas, symbol_table, tokens)
             
             lexeme_obj = Lexeme()
+
+        print(f">> Big automato aceita o lexema: '{lexeme_obj.get()}' index {i}")
 
         i += 1
         
