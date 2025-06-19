@@ -24,6 +24,8 @@ Considerar ordem para evitar recursividade ciclica infinita
 
 from __future__ import annotations
 from . import utils
+from model.symbol_table import TokenType, RegexToken
+from typing import List, Dict, Set
 
 SEPARATOR = ':=='
 
@@ -54,50 +56,83 @@ def get_productions_from_file(file_path: str) -> dict():
             gr[symbol].append(production)
 
 
-def define_first(grammar: dict) -> dict:
+def define_first(grammars_tokentypes: list[TokenType], terminals : Set[str]) -> dict:
     gr_firsts = {}
+    
+    for grammar_tokentype in grammars_tokentypes:
+        # Ex. E:== e<T>
+        # gr_firsts['E'] = set()
+        if grammar_tokentype.name not in gr_firsts:
+            gr_firsts[grammar_tokentype.name] = set()
+        
+    for grammar_tokentype in grammars_tokentypes:
+        first(grammar_tokentype.name, grammars_tokentypes, gr_firsts, terminals=terminals)
 
-    # Inicializa os conjuntos FIRST vazios para cada não-terminal
-    for non_terminal in grammar:
-        gr_firsts[non_terminal] = set()
-
-    # Computa FIRSTs de todos os não-terminais
-    for non_terminal in grammar:
-        first(non_terminal, grammar, gr_firsts)
 
     return gr_firsts
 
 
 # Função auxiliar para calcular o FIRST de um símbolo
-def first(symbol, grammar, gr_firsts) -> set():
+def first(name: str, tokentypes: List[TokenType],
+          gr_firsts: Dict[str, Set[str]],
+          terminals: Set[str],
+          visited: Set[str] = None) -> Set[str]:
 
-    # Caso base: terminal ou epsilon
-    if symbol not in grammar:
-        return {symbol}
+    if visited is None:
+        visited = set()
 
-    # Já foi computado
-    if gr_firsts[symbol]:
-        return gr_firsts[symbol]
+    if name in visited:
+        return gr_firsts[name]  # evita recursão infinita
 
-    result = set()
+    visited.add(name)
+    curr_gr_firsts = gr_firsts[name]
+    curr_tokentypes = [t for t in tokentypes if t.name == name]
 
-    for production in grammar[symbol]:
-        symbols = list(production)
-        for i, sym in enumerate(symbols):
-            sym_first = first(sym, grammar, gr_firsts)
-            result.update(sym_first - {'&'})
+    for curr_tokentype in curr_tokentypes:
+        grammar = curr_tokentype.regex
+        nullable = True  # se todos os símbolos da produção podem gerar ε
 
-            if '&' in sym_first:
-                # Continua para o próximo símbolo
-                if i == len(symbols) - 1:
-                    result.add('&')
-                continue
-            else:
+        for i, token in enumerate(grammar):
+            # Trata terminais compostos (como 'id')
+            if token.type == RegexToken.CHAR:
+                composed = token.value
+                j = i + 1
+                while j < len(grammar) and grammar[j].type == RegexToken.CHAR:
+                    test = composed + grammar[j].value
+                    if test in terminals:
+                        composed = test
+                        j += 1
+                    else:
+                        break
+                curr_gr_firsts.add(composed)
+                nullable = False
+                break  # terminal encontrado, fim da análise dessa produção
+
+            elif token.type == RegexToken.REF:
+                ref_name = token.value
+                ref_first = first(ref_name, tokentypes, gr_firsts, terminals, visited)
+                curr_gr_firsts.update(ref_first - {'&'})
+
+                if '&' in ref_first:
+                    continue  # tenta o próximo símbolo
+                else:
+                    nullable = False
+                    break
+
+            elif token.type == RegexToken.LPAREN:
+                for token in grammar[1:]:
+                    if token.type == RegexToken.RPAREN:
+                        break
+                    if token.type == RegexToken.CHAR:
+                        curr_gr_firsts.add(token.value)
                 break
-        else:
-                # Todos os símbolos da produção têm epsilon
-            result.add('&')
 
-    gr_firsts[symbol] = result
-    return result
+            else:
+                nullable = False
+                break
 
+        if nullable:
+            curr_gr_firsts.add('&')
+
+    visited.remove(name)
+    return curr_gr_firsts

@@ -91,18 +91,9 @@ def insert_concatenation(tokens: list[RegexToken]) -> list[RegexToken]:
                 result.append(RegexToken(RegexToken.CONCAT))
     return result
 
-def get_regex_from_file(file_path: str) -> list[TokenType]:
-    """
-    Lê expressões regulares de um arquivo no formato:
-    TOKEN:== REGEX
-    e retorna uma lista de tuplas: TOKEN, list[RegexToken]
-    """
-    lines = utils.get_file_lines(file_path)
+def get_regex_from_lines(lines: list[str]) -> list[TokenType]:
     regex_list = []
     tokentype_list = []
-    
-    if not lines:
-        raise ValueError(f"O arquivo {file_path} está vazio ou não contém uma regex válida.")
     
     for line in lines:
         if SEPARATOR not in line:
@@ -114,7 +105,19 @@ def get_regex_from_file(file_path: str) -> list[TokenType]:
         tokens_without_concat = tokenize_regex(regex)
         tokentype = TokenType(name=categoria, regex=tokens_without_concat, dfa=None)  # DFA será construído posteriormente
         tokentype_list.append(tokentype)
+        
     return tokentype_list
+
+def get_regex_from_file(file_path: str) -> list[TokenType]:
+    """
+    Lê expressões regulares de um arquivo no formato:
+    TOKEN:== REGEX
+    e retorna uma lista de tuplas: TOKEN, list[RegexToken]
+    """
+    lines = utils.get_file_lines(file_path)
+    if not lines:
+        raise ValueError(f"O arquivo {file_path} está vazio ou não contém uma regex válida.")
+    return get_regex_from_lines(lines)
 
 def resolve_references_add_concats(tokentypes_without_concat: list[TokenType]) -> list[TokenType]:
     token_map = {t.name: t for t in tokentypes_without_concat}
