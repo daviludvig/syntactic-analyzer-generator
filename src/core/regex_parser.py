@@ -30,6 +30,16 @@ def tokenize_regex(regex: str) -> list[RegexToken]:
             tokens.append(RegexToken(c))
             i += 1
 
+        elif c == '<':
+            j = i + 1
+            while j < len(regex) and regex[j] != '>':
+                j += 1
+            if j == len(regex):
+                raise ValueError("Referência de token não fechada com '>'.")
+            ref_name = regex[i+1:j]
+            tokens.append(RegexToken(RegexToken.REF, ref_name))
+            i = j + 1
+
         elif c == '[':
             j = i + 1
             while j < len(regex) and regex[j] != ']':
@@ -101,8 +111,39 @@ def get_regex_from_file(file_path: str) -> list[TokenType]:
         regex_list.append((categoria, regex))
         
     for i, (categoria, regex) in enumerate(regex_list):
-        tokens = tokenize_regex(regex)
-        tokens_with_concat = insert_concatenation(tokens)
-        tokentype = TokenType(name=categoria, regex=tokens_with_concat, dfa=None)  # DFA será construído posteriormente
+        tokens_without_concat = tokenize_regex(regex)
+        tokentype = TokenType(name=categoria, regex=tokens_without_concat, dfa=None)  # DFA será construído posteriormente
         tokentype_list.append(tokentype)
     return tokentype_list
+
+def resolve_references_add_concats(tokentypes_without_concat: list[TokenType]) -> list[TokenType]:
+    token_map = {t.name: t for t in tokentypes_without_concat}
+
+    def expand_token_list(tokens: list[RegexToken], visited: set[str]) -> list[RegexToken]:
+        resolved = []
+        for token in tokens:
+            if token.type == RegexToken.REF:
+                ref_name = token.value
+                if ref_name not in token_map:
+                    raise ValueError(f"Referência <{ref_name}> não encontrada.")
+                if ref_name in visited:
+                    raise ValueError(f"Referência cíclica detectada: {' → '.join(visited)} → {ref_name}")
+                
+                # Expande recursivamente a referência
+                sub_tokens = expand_token_list(token_map[ref_name].regex, visited | {ref_name})
+                resolved.append(RegexToken(RegexToken.LPAREN))
+                resolved.extend(sub_tokens)
+                resolved.append(RegexToken(RegexToken.RPAREN))
+            else:
+                resolved.append(token)
+        return resolved
+
+    resolved_tokentypes = []
+    for tokentype in tokentypes_without_concat:
+        expanded_tokens = expand_token_list(tokentype.regex, {tokentype.name})
+        with_concats = insert_concatenation(expanded_tokens)
+        resolved_token = tokentype.copy()
+        resolved_token.regex = with_concats
+        resolved_tokentypes.append(resolved_token)
+
+    return resolved_tokentypes
