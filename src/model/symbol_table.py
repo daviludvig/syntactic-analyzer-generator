@@ -33,6 +33,13 @@ class TokenType:
             f"  Regex : {regex_str}\n"
             f"  {dfa_str}"
         )
+        
+    def copy(self) -> TokenType:
+        """Cria uma cópia do TokenType, incluindo uma cópia do DFA se existir."""
+        new_token_type = TokenType(self.name, self.regex.copy())
+        if self.dfa:
+            new_token_type.dfa = self.dfa.copy()
+        return new_token_type
 
 class RegexToken:
     CHAR = 'CHAR'
@@ -44,6 +51,7 @@ class RegexToken:
     RPAREN = ')'
     CONCAT = '.'  # Caso especial: inseriremos este operador mesmo que não apareça explicitamente na regex
     CHAR_CLASS = 'CLASS'
+    REF = 'REF'  # Referência a outro token
 
     def __init__(self, type_, value=None):
         self.type = type_
