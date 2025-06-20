@@ -71,21 +71,37 @@ def first(
         grammar = curr_tokentype.regex
         nullable = True  # se todos os símbolos da produção podem gerar ε
 
-        for i, token in enumerate(grammar):
-            # Trata terminais compostos (como 'id')
+        if (
+            len(grammar) == 1
+            and grammar[0].type == RegexToken.CHAR
+            and grammar[0].value == "&"
+        ):
+            curr_gr_firsts.add("&")
+            continue
+
+        i = 0
+        while i < len(grammar):
+            token = grammar[i]
+
             if token.type == RegexToken.CHAR:
-                composed = token.value
-                j = i + 1
+                # tenta formar o maior terminal possível com sequência de CHARs
+                j = i
+                composed = ""
+                longest_match = None
                 while j < len(grammar) and grammar[j].type == RegexToken.CHAR:
-                    test = composed + grammar[j].value
-                    if test in terminals:
-                        composed = test
-                        j += 1
-                    else:
-                        break
-                curr_gr_firsts.add(composed)
-                nullable = False
-                break  # terminal encontrado, fim da análise dessa produção
+                    composed += grammar[j].value
+                    if composed in terminals:
+                        longest_match = composed
+                    j += 1
+
+                if longest_match:
+                    curr_gr_firsts.add(longest_match)
+                    nullable = False
+                    break
+                else:
+                    # se nem parte da sequência for reconhecida, assume como inválido
+                    nullable = False
+                    break
 
             elif token.type == RegexToken.REF:
                 ref_name = token.value
@@ -93,17 +109,20 @@ def first(
                 curr_gr_firsts.update(ref_first - {"&"})
 
                 if "&" in ref_first:
+                    i += 1
                     continue  # tenta o próximo símbolo
                 else:
                     nullable = False
                     break
 
             elif token.type == RegexToken.LPAREN:
-                for token in grammar[1:]:
+                # comportamento básico para parênteses (pode ser estendido)
+                for token in grammar[i + 1 :]:
                     if token.type == RegexToken.RPAREN:
                         break
                     if token.type == RegexToken.CHAR:
                         curr_gr_firsts.add(token.value)
+                nullable = False
                 break
 
             else:

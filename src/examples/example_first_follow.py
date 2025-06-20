@@ -6,7 +6,7 @@ import core.regex_parser as regex_parser
 "v" for 'or' / "a" for 'and' / "n" for 'not
 Problema identificado: quando o terminal tem 2 letras (ex: id), só pega a primeira letra
 """
-terminals = {"v", "a", "n", "id"}
+terminals = {"v", "a", "n", "identificador", "123"}
 non_terminals = ["E", "E'", "T", "T'", "F"]
 grammar = [
     "E:== <T><E'>",
@@ -14,9 +14,9 @@ grammar = [
     "E':== &",
     "T:== <F><T'>",
     "T':== a<F><T'>",
-    "T':== [a-z]123",
+    "T':== 123",
     "F:== n<F>",
-    "F:== id",
+    "F:== identificador",
 ]
 print(f"Analisando a gramática:{grammar}")
 tokentypes = regex_parser.get_regex_from_lines(grammar)
