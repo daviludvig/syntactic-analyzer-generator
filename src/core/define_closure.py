@@ -18,10 +18,10 @@ def define_closure(input_state: TokenType, tokenTypes: list[TokenType]):
         print("debug : é o primeiro")
 
         symbol_list = list()
-        # Selecionar o primeiro simbolo da produção
-        symbol_list.append(input_state.regex[0].value)  #ex: T
+        # Selecionar o primeiro simbolo da produção que não seja SLR_DOT
+        symbol_list.append(input_state.regex[1].value)  #ex: T
 
-        input_state.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
+        #input_state.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
         closureSet.append(input_state)
 
 

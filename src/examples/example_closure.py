@@ -24,6 +24,9 @@ grammar = [
 
 print(f"Analisando a gramática:{grammar}")
 tokentypes = regex_parser.get_regex_from_lines(grammar)
+for tokentype in tokentypes:
+    regex = tokentype.regex
+    regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
 
 print("todos tokentypes: ", tokentypes)
 
