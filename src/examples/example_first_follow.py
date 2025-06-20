@@ -2,10 +2,6 @@ import core.define_first as define_first
 import core.define_follow as define_follow
 import core.regex_parser as regex_parser
 
-"""
-"v" for 'or' / "a" for 'and' / "n" for 'not
-Problema identificado: quando o terminal tem 2 letras (ex: id), só pega a primeira letra
-"""
 terminals = {"v", "a", "n", "identificador", "123"}
 non_terminals = ["E", "E'", "T", "T'", "F"]
 grammar = [
