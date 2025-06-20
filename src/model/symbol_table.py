@@ -52,6 +52,7 @@ class RegexToken:
     CONCAT = '.'  # Caso especial: inseriremos este operador mesmo que não apareça explicitamente na regex
     CHAR_CLASS = 'CLASS'
     REF = 'REF'  # Referência a outro token
+    SLR_DOT = 'SLR_DOT'  # Representa char . para SLR
 
     def __init__(self, type_, value=None):
         self.type = type_
