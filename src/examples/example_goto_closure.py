@@ -1,37 +1,83 @@
 import sys
 import os
+import itertools
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 import core.regex_parser as regex_parser
 import core.goto as goto
 import core.define_closure as define_closure
+from model.symbol_table import RegexToken, TokenType
 
-terminals = {"v", "a", "n", "identificador", "123"}
-non_terminals = {"E", "E'", "T", "T'", "F"}
+# === GRAMÁTICA ===
+terminals = {"mais", "vezes", "id", "(", ")"}
+non_terminals = {"E", "E'", "T", "F"}
 grammar = [
-    "E:== <T><E'>",
-    "E':== <T><E'>",
-    "E':== &",
-    "T:== <F><T'>",
-    "T':== a<F><T'>",
-    "T':== 123",
-    "F:== n<F>",
-    "F:== identificador",
+    "E':== <E>",
+    "E:==<E>mais<T>",
+    "E:==<T>",
+    "T:==<T>vezes<F>",
+    "T:==<F>",
+    "F:==(<E>)",
+    "F:==id",
 ]
 
 tokentypes = regex_parser.get_regex_from_lines(grammar)
-for tokentype in tokentypes:
-    regex = tokentype.regex
-    regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
 
-for tokentype in tokentypes:
-    print(f"TokenType: {tokentype.name}, Regex: {tokentype.regex}")
+# === FUNÇÃO AUXILIAR PARA OBTER O ÍNDICE ORIGINAL DE UMA PRODUÇÃO ===
+def get_original_index(item: TokenType, base_productions: list[TokenType]) -> int:
+    regex_without_dot = [t for t in item.regex if t.type != RegexToken.SLR_DOT]
+    for i, prod in enumerate(base_productions):
+        if prod.name == item.name and prod.regex == regex_without_dot:
+            return i
+    raise ValueError(f"Produção não encontrada para o item: {item}")
 
-print(f"Analisando a gramática: {grammar}\n")
+# === ITEM INICIAL ===
+start_index = 0
+i0 = define_closure.define_closure(tokentypes[start_index], tokentypes, start_index)
 
-for element in non_terminals.union(terminals):
-    proximo = goto.goto(tokentypes, element, terminals, non_terminals)
-    print(f"Próximo estado após a transição com '{element}':\n{proximo}\n")
-    for prox in proximo:
-        closure_proximo = define_closure.define_closure(prox, tokentypes)
-        print(f"Conjunto closure desse elemento '{closure_proximo}' \n")
+# === CONJUNTO CANÔNICO ===
+canonical_items = {"i0": i0}
+transitions = {}
+state_queue = [("i0", i0)]
+state_counter = itertools.count(start=1)
+
+def state_exists(new_state):
+    for name, state in canonical_items.items():
+        if state == new_state:
+            return name
+    return None
+
+# === CONSTRUÇÃO DOS ESTADOS ===
+while state_queue:
+    current_name, current_set = state_queue.pop(0)
+    for symbol in terminals.union(non_terminals):
+        goto_result = goto.goto(current_set, symbol, terminals, non_terminals)
+        if goto_result:
+            closure_result = set()
+            for item in goto_result:
+                try:
+                    prod_index = get_original_index(item, tokentypes)
+                    closure_result.update(define_closure.define_closure(item, tokentypes, prod_index))
+                except ValueError:
+                    continue
+
+            existing_name = state_exists(closure_result)
+            if existing_name is None:
+                new_name = f"i{next(state_counter)}"
+                canonical_items[new_name] = closure_result
+                state_queue.append((new_name, closure_result))
+                transitions[(current_name, symbol)] = new_name
+            else:
+                transitions[(current_name, symbol)] = existing_name
+
+# === EXIBIÇÃO DOS ITENS ===
+for state_name, item_set in canonical_items.items():
+    print(f"Conjunto de itens {state_name}:")
+    for tokentype in sorted(item_set, key=lambda t: t.name):
+        print(f"  TokenType: {tokentype.name}, Regex: {tokentype.regex}")
+    print()
+
+print("Transições:")
+for (src, symbol), dest in transitions.items():
+    print(f"  {src} -- {symbol} --> {dest}")

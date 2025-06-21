@@ -9,6 +9,27 @@ def find_dot_in_regex(regex: list[RegexToken]) -> int:
             return i
     return -1
 
+def get_element_after_dot(regex: list[RegexToken], dot_index: int) -> str:
+    """Obtém o elemento imediatamente após o ponto (.) na regex."""
+    if dot_index + 1 < len(regex):
+        next_token = regex[dot_index + 1]
+        if next_token.type == RegexToken.CHAR or next_token.type == RegexToken.REF:
+            return next_token.value
+    return None
+
+def get_transitions_dot(tokentypes: Set[TokenType]) -> Set[str]:
+    """Obtém os símbolos que podem ser alcançados a partir do ponto (.) em cada TokenType.
+    Ex. T->.E, E->.id, E->.(E)
+    Deve retornar {'E', 'id', '('}"""
+    transitions = set()
+    for tokentype in tokentypes:
+        regex = tokentype.regex
+        dot_index = find_dot_in_regex(regex)
+        if dot_index != -1:
+            element_after_dot = get_element_after_dot(regex, dot_index)
+            if element_after_dot:
+                transitions.add(element_after_dot)
+    return transitions
 
 def goto(
     i: Set[TokenType], x_symbol: str, terminals: set[str], non_terminals: set[str]
