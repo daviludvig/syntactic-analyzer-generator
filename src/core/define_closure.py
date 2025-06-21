@@ -24,15 +24,11 @@ def define_closure(input_state: TokenType, tokenTypes: list[TokenType]):
         #input_state.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
         closureSet.append(input_state)
 
-
-        
         for rule in tokenTypes:
-            print("debug : ", symbol_list, rule.name)
             if rule.name in symbol_list:
                 rule.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
                 closureSet.append(rule)
-                # Adicona os simbolos não terminais que serão buscados
-                print("debug : simbol list ", symbol_list)    
+                # Adicona os simbolos não terminais que serão buscados  
                 if rule.regex[0].type == "REF":
                     symbol_list.append(rule.regex[0].value)
            
@@ -43,17 +39,20 @@ def define_closure(input_state: TokenType, tokenTypes: list[TokenType]):
         closureSet.append(input_state)
         # Verificar a posição do SLR_DOT(.)
         regex_list = input_state.regex
+    
         
         for i in range(len(regex_list)):
             if regex_list[i].type == "SLR_DOT":
-
+                # Se o SLR_DOT está no final, sai do loop
+                if i == (len(regex_list) - 1):
+                    break
                 if regex_list[i+1].type == "REF":
                     symbol_list = list()
                     # O simbolo em análise deve ser aquele que tinha o ponto
                     symbol_list.append(regex_list[i+1].value)
                     for rule in tokenTypes:
                         if rule.name in symbol_list:
-                            rule.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
+                            #rule.regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
                             closureSet.append(rule)
                             # Adicona os simbolos não terminais que serão buscados    
                         if rule.regex[0].type == "REF":

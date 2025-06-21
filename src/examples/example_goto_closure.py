@@ -1,5 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+
 import core.regex_parser as regex_parser
 import core.goto as goto
+import core.define_closure as define_closure
 
 terminals = {"v", "a", "n", "identificador", "123"}
 non_terminals = {"E", "E'", "T", "T'", "F"}
@@ -27,3 +32,6 @@ print(f"Analisando a gramática: {grammar}\n")
 for element in non_terminals.union(terminals):
     proximo = goto.goto(tokentypes, element, terminals, non_terminals)
     print(f"Próximo estado após a transição com '{element}':\n{proximo}\n")
+    for prox in proximo:
+        closure_proximo = define_closure.define_closure(prox, tokentypes)
+        print(f"Conjunto closure desse elemento '{closure_proximo}' \n")
