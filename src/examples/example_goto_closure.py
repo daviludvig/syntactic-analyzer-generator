@@ -23,6 +23,7 @@ grammar = [
 ]
 
 tokentypes = regex_parser.get_regex_from_lines(grammar)
+print ("DEBUG tokentypes " , tokentypes )
 
 # === FUNÇÃO AUXILIAR PARA OBTER O ÍNDICE ORIGINAL DE UMA PRODUÇÃO ===
 def get_original_index(item: TokenType, base_productions: list[TokenType]) -> int:
@@ -35,6 +36,8 @@ def get_original_index(item: TokenType, base_productions: list[TokenType]) -> in
 # === ITEM INICIAL ===
 start_index = 0
 i0 = define_closure.define_closure(tokentypes[start_index], tokentypes, start_index)
+
+print("DEBUG: i0: " , i0)
 
 # === CONJUNTO CANÔNICO ===
 canonical_items = {"i0": i0}
@@ -51,14 +54,18 @@ def state_exists(new_state):
 # === CONSTRUÇÃO DOS ESTADOS ===
 while state_queue:
     current_name, current_set = state_queue.pop(0)
+    # Para todo simbolo terminal ou não terminal da gramatica
     for symbol in terminals.union(non_terminals):
-        goto_result = goto.goto(current_set, symbol, terminals, non_terminals)
+        # Obter o go to para cada simbolo
+        goto_result = goto.goto(current_set, symbol, terminals, non_terminals, current_name)
         if goto_result:
             closure_result = set()
             for item in goto_result:
+                print("DEBUG go_to item " , item, " for symbol: ", symbol, " state: ", current_name)
                 try:
                     prod_index = get_original_index(item, tokentypes)
                     closure_result.update(define_closure.define_closure(item, tokentypes, prod_index))
+                    print("DEBUG closure result  " , closure_result)
                 except ValueError:
                     continue
 

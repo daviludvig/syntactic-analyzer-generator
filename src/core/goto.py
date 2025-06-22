@@ -32,10 +32,11 @@ def get_transitions_dot(tokentypes: Set[TokenType]) -> Set[str]:
     return transitions
 
 def goto(
-    i: Set[TokenType], x_symbol: str, terminals: set[str], non_terminals: set[str]
+    i: Set[TokenType], x_symbol: str, terminals: set[str], non_terminals: set[str], current_name
 ) -> Set[TokenType]:
     new_tokentypes = set()
 
+    # Para cada item do estado em analise
     for tokentype in i:
         regex = tokentype.regex
         dot_index = find_dot_in_regex(regex)
@@ -46,6 +47,7 @@ def goto(
             continue
 
         # Formar maior sequência de CHARs a partir da posição após o ponto
+        # Caso em que o terminal é formado por mais de um char
         j = dot_index + 1
         composed = ""
         longest_match = None
@@ -79,6 +81,7 @@ def goto(
             token = regex[dot_index + 1]
             if token.type == RegexToken.REF or token.type == RegexToken.CHAR:
                 if token.value == x_symbol:
+                    # Move o ponto "."
                     new_regex = (
                         regex[:dot_index]
                         + [token]
@@ -95,7 +98,7 @@ def goto(
 
     if not new_tokentypes:
         print(
-            f"No valid transitions found for symbol '{x_symbol}' in the given token types."
+            f"DEBUG i: {current_name} No valid transitions found for symbol '{x_symbol}' in the given token types."
         )
         return set()
     return new_tokentypes
