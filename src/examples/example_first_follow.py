@@ -15,7 +15,8 @@ grammar = [
     "F:== identificador",
 ]
 print(f"Analisando a gramática:{grammar}")
-tokentypes = regex_parser.get_regex_from_lines(grammar)
+tokentypes = regex_parser.get_regex_from_lines(grammar, terminals)
+print(tokentypes)
 firsts = define_first.define_first(tokentypes, terminals=terminals)
 for nt, f in firsts.items():
     print(f"FIRST({nt}) = {f}")
