@@ -20,7 +20,7 @@ def expand_char_class(char_class: str) -> list:
             i += 1
     return chars
 
-def tokenize_regex(regex: str) -> list[RegexToken]:
+def tokenize_regex(regex: str, terminals: set[str]) -> list[RegexToken]:
     tokens = []
     i = 0
     while i < len(regex):
@@ -69,9 +69,14 @@ def tokenize_regex(regex: str) -> list[RegexToken]:
                 raise ValueError("Caractere de escape ao final de um padrão.")
 
         else:
-            tokens.append(RegexToken(RegexToken.CHAR, c))
-            i += 1
-
+            terminal = ""
+            while i < len(regex) and regex[i] not in {'*', '+', '?', '|', '(', ')', '<', '[', '\\'}:
+                c = regex[i]
+                terminal += c
+                i += 1
+                
+            tokens.append(RegexToken(RegexToken.CHAR, terminal))
+            
     return tokens
 
 # Operador de concatenação definido explicitamente a partir da regex, quando há um caractere ou ')' à esquerda, e um caractere ou '(' à direita
@@ -91,7 +96,7 @@ def insert_concatenation(tokens: list[RegexToken]) -> list[RegexToken]:
                 result.append(RegexToken(RegexToken.CONCAT))
     return result
 
-def get_regex_from_lines(lines: list[str]) -> list[TokenType]:
+def get_regex_from_lines(lines: list[str], terminals: set[str]) -> list[TokenType]:
     regex_list = []
     tokentype_list = []
     
@@ -102,7 +107,7 @@ def get_regex_from_lines(lines: list[str]) -> list[TokenType]:
         regex_list.append((categoria, regex))
         
     for i, (categoria, regex) in enumerate(regex_list):
-        tokens_without_concat = tokenize_regex(regex)
+        tokens_without_concat = tokenize_regex(regex, terminals)
         tokentype = TokenType(name=categoria, regex=tokens_without_concat, dfa=None)  # DFA será construído posteriormente
         tokentype_list.append(tokentype)
         

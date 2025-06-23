@@ -1,4 +1,7 @@
-PR:== beg|func|ret|end
+PR:== beg
+PR:== func
+PR:== ret
+PR:== end
 SEMICOLON:== ;
 COMMA:== ,
 ARROW:== ->
