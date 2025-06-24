@@ -2,6 +2,7 @@ import os
 import shutil
 
 OUTPUT_PATH_DIR = "outputs"
+SEPARATOR = ":=="
 
 def get_file_lines(file_path: str) -> list[str]:
     """Lê um arquivo e retorna uma lista de linhas não vazias, sem espaços extras."""   
@@ -46,3 +47,14 @@ def write_in_file(file_path: str, content: str) -> None:
     os.makedirs(os.path.dirname(file_path), exist_ok=True)
     with open(file_path, 'a', encoding='utf-8') as file:
         file.write(content + '\n')
+
+def get_non_terminals(grammar: set[str]) -> set[str]:
+
+    non_terminals = set()
+    for prod in grammar:
+        cabeca,corpo = prod.split(SEPARATOR)
+        non_terminals.update(cabeca)
+
+    return non_terminals
+
+

@@ -4,7 +4,7 @@ class Action:
     REDUCE = "reduce"
     SHIFT = "shift"
     ACCEPT = "accept"
-    DESLOCAMENTO = "deslocamento"
+    GOTO = "goto"
     
     def __init__(self, action_type, transicao : int = None):
         self.action_type = action_type
