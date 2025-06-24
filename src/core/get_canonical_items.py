@@ -5,10 +5,7 @@ from model.symbol_table import RegexToken, TokenType
 from collections import deque
 
 
-def get_canonical_items(
-    tokentypes: list[TokenType], terminals: set[str], non_terminals: set[str]
-):
-    from copy import deepcopy
+def get_canonical_items(tokentypes: list[TokenType]):
 
     # Cada estado será um conjunto imutável (frozenset) de TokenTypes
     estados: list[FrozenSet[TokenType]] = []
@@ -37,8 +34,7 @@ def get_canonical_items(
 
         for simbolo in simbolos_possiveis:
             # Aplica GOTO ao estado atual com o símbolo
-            estado_goto_raw = goto.goto(estado_atual, simbolo, terminals, non_terminals)
-            print(">> Raw ", estado_goto_raw)
+            estado_goto_raw = goto.goto(estado_atual, simbolo)
 
             # Aplica CLOSURE a cada produção do resultado do GOTO
             novo_estado = set()

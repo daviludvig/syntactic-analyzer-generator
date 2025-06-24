@@ -14,7 +14,7 @@ grammar = [
     "F:== identificador",
 ]
 
-tokentypes = regex_parser.get_regex_from_lines(grammar, terminals)
+tokentypes = regex_parser.get_regex_from_lines(grammar)
 for tokentype in tokentypes:
     regex = tokentype.regex
     regex.insert(0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, "."))
@@ -25,5 +25,5 @@ for tokentype in tokentypes:
 print(f"Analisando a gramática: {grammar}\n")
 
 for element in non_terminals.union(terminals):
-    proximo = goto.goto(tokentypes, element, terminals, non_terminals)
+    proximo = goto.goto(tokentypes, element)
     print(f"Próximo estado após a transição com '{element}':\n{proximo}\n")

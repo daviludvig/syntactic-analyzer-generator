@@ -27,8 +27,6 @@ grammar = [
     "B:== true",
     "B:== false",
 ]
-terminals = {"or", "and", "not", "true", "false", "(", ")"}
-non_terminals = {"S", "A", "B", "S'"}
 
 # Gerar TokenTypes
 tokentypes = regex_parser.get_regex_from_lines(grammar)
@@ -42,7 +40,7 @@ i0 = define_closure.define_closure(tokentypes_copy[0], tokentypes)
 for tokentype in i0:
     print(tokentype.name, ":", tokentype.regex)
 
-goto_i0_a = goto.goto(i0, "A", terminals, non_terminals)
+goto_i0_a = goto.goto(i0, "A")
 i1 = set()
 for tokentype in goto_i0_a:
     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
@@ -52,7 +50,7 @@ print("\ni1 (i0 -> A -> i1):")
 for tokentype in i1:
     print(tokentype.name, ":", tokentype.regex)
 
-goto_i1_and = goto.goto(i1, "and", terminals, non_terminals)
+goto_i1_and = goto.goto(i1, "and")
 i2 = set()
 for tokentype in goto_i1_and:
     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
