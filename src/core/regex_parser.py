@@ -20,7 +20,7 @@ def expand_char_class(char_class: str) -> list:
             i += 1
     return chars
 
-def tokenize_regex(regex: str, terminals: set[str]) -> list[RegexToken]:
+def tokenize_regex(regex: str) -> list[RegexToken]:
     tokens = []
     i = 0
     while i < len(regex):
@@ -80,13 +80,19 @@ def tokenize_regex(regex: str, terminals: set[str]) -> list[RegexToken]:
                 raise ValueError("Caractere de escape ao final de um padrão.")
 
         else:
-            terminal = ""
-            while i < len(regex) and regex[i] not in {'*', '+', '?', '|', '(', ')', '<', '[', '\\'}:
+            building_char = c
+            i += 1
+            while i < len(regex) and regex[i] not in {'*', '+', '?', '|', '(', ')', '<', '>', '[', "'"}:
                 c = regex[i]
-                terminal += c
+                if c == ' ' or c == '\n':
+                    break
+                building_char += c
                 i += 1
                 
-            tokens.append(RegexToken(RegexToken.CHAR, terminal.strip()))
+            # Adiciona o caractere ou sequência de caracteres como um token CHAR
+            if building_char:
+                tokens.append(RegexToken(RegexToken.CHAR, building_char.strip()))
+            i+= 1  # Avança para o próximo caractere
             
     return tokens
 
@@ -107,7 +113,7 @@ def insert_concatenation(tokens: list[RegexToken]) -> list[RegexToken]:
                 result.append(RegexToken(RegexToken.CONCAT))
     return result
 
-def get_regex_from_lines(lines: list[str], terminals: set[str]) -> list[TokenType]:
+def get_regex_from_lines(lines: list[str]) -> list[TokenType]:
     regex_list = []
     tokentype_list = []
     
@@ -118,7 +124,7 @@ def get_regex_from_lines(lines: list[str], terminals: set[str]) -> list[TokenTyp
         regex_list.append((categoria, regex))
         
     for i, (categoria, regex) in enumerate(regex_list):
-        tokens_without_concat = tokenize_regex(regex, terminals)
+        tokens_without_concat = tokenize_regex(regex)
         tokentype = TokenType(name=categoria, regex=tokens_without_concat, dfa=None)  # DFA será construído posteriormente
         tokentype_list.append(tokentype)
         

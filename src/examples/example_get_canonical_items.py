@@ -8,14 +8,14 @@ grammar = [
     "A:== <A> and <B>",
     "A:== <B>",
     "B:== not <B>",
-    "B:== lparen<S>rparen",
+    "B:== '('<S>')'",
     "B:== true",
     "B:== false",
 ]
-terminals = {"or", "and", "not", "true", "false", "lparen", "rparen"}
+terminals = {"or", "and", "not", "true", "false", "(", ")"}
 non_terminals = {"S", "A", "B", "S'"}
 
-tokentypes = regex_parser.get_regex_from_lines(grammar, terminals)
+tokentypes = regex_parser.get_regex_from_lines(grammar)
 
 tokentypes_copy = tokentypes.copy()
 tokentypes_copy[0].regex.insert(
