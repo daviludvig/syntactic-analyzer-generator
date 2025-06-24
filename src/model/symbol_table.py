@@ -34,6 +34,16 @@ class TokenType:
             f"  {dfa_str}"
         )
         
+    def __eq__(self, other):
+        return (
+            isinstance(other, TokenType)
+            and self.name == other.name
+            and self.regex == other.regex
+        )
+
+    def __hash__(self):
+        return hash((self.name, tuple(self.regex)))
+        
     def copy(self) -> TokenType:
         """Cria uma cópia do TokenType, incluindo uma cópia do DFA se existir."""
         new_token_type = TokenType(self.name, self.regex.copy())
@@ -52,7 +62,7 @@ class RegexToken:
     CONCAT = '.'  # Caso especial: inseriremos este operador mesmo que não apareça explicitamente na regex
     CHAR_CLASS = 'CLASS'
     REF = 'REF'  # Referência a outro token
-    SLR_DOT = 'SLR_DOT'  # Representa char . para SLR
+    SLR_DOT = 'SLR_DOT' # Representa char . para SLR
 
     def __init__(self, type_, value=None):
         self.type = type_
@@ -60,6 +70,12 @@ class RegexToken:
 
     def __repr__(self):
         return f"{self.type}({self.value})" if self.value else self.type
+    
+    def __eq__(self, other):
+        return isinstance(other, RegexToken) and self.type == other.type and self.value == other.value
+
+    def __hash__(self):
+        return hash((self.type, self.value))
 
 class Lexeme:
     def __init__(self):
