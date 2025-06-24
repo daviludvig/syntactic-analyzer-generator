@@ -48,7 +48,7 @@ for tokentype in goto_i0_a:
     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
     i1.update(tokentype_closure)
 
-print("\ni1:")
+print("\ni1 (i0 -> A -> i1):")
 for tokentype in i1:
     print(tokentype.name, ":", tokentype.regex)
 
@@ -58,6 +58,6 @@ for tokentype in goto_i1_and:
     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
     i2.update(tokentype_closure)
 
-print("\ni2:")
+print("\ni2 (i1 -> and -> i2):")
 for tokentype in i2:
     print(tokentype.name, ":", tokentype.regex)
