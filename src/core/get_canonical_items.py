@@ -3,10 +3,10 @@ import core.goto as goto
 import core.define_closure as define_closure
 from model.symbol_table import RegexToken, TokenType
 from collections import deque
-
+from core.slr_table import Action
 
 def get_canonical_items(
-    tokentypes: list[TokenType], terminals: set[str], non_terminals: set[str]
+    tokentypes: list[TokenType], terminals: set[str], non_terminals: set[str], start_symbol: str
 ):
     from copy import deepcopy
 
@@ -55,4 +55,6 @@ def get_canonical_items(
             id_destino = estados.index(novo_estado_fs)
             transicoes[(id_atual, simbolo)] = id_destino
 
+    estado_destino = transicoes[(0,start_symbol)]
+    transicoes[(estado_destino, "$")] = Action.ACCEPT
     return estados, transicoes
