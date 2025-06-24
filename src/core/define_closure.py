@@ -20,7 +20,9 @@ def define_closure(
 
         # Encontra a posição do ponto
         regex = state.regex
-        dot_index = next((i for i, tok in enumerate(regex) if tok.type == RegexToken.SLR_DOT), -1)
+        dot_index = next(
+            (i for i, tok in enumerate(regex) if tok.type == RegexToken.SLR_DOT), -1
+        )
 
         # Se não há ponto ou ele está no final, não expande
         if dot_index == -1 or dot_index + 1 >= len(regex):
@@ -36,9 +38,7 @@ def define_closure(
                     # Cria novo item com ponto no início
                     new_regex = [RegexToken(RegexToken.SLR_DOT, ".")] + prod.regex
                     new_token = TokenType(
-                        prod.name,
-                        new_regex,
-                        prod.dfa.copy() if prod.dfa else None
+                        prod.name, new_regex, prod.dfa.copy() if prod.dfa else None
                     )
                     expand(new_token)
 

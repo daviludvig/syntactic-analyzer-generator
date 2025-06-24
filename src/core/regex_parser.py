@@ -75,7 +75,7 @@ def tokenize_regex(regex: str, terminals: set[str]) -> list[RegexToken]:
                 terminal += c
                 i += 1
                 
-            tokens.append(RegexToken(RegexToken.CHAR, terminal))
+            tokens.append(RegexToken(RegexToken.CHAR, terminal.strip()))
             
     return tokens
 
