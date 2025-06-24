@@ -1,6 +1,6 @@
 import sys
 import os
-import itertools
+from typing import Set, Tuple, FrozenSet
 
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
@@ -8,6 +8,73 @@ import core.regex_parser as regex_parser
 import core.goto as goto
 import core.define_closure as define_closure
 from model.symbol_table import RegexToken, TokenType
+from collections import deque
+
+
+def get_canonical_items(
+    tokentypes: list[TokenType],
+    terminals: set[str],
+    non_terminals: set[str]
+):
+    from copy import deepcopy
+
+    # Cada estado será um conjunto imutável (frozenset) de TokenTypes
+    estados: list[FrozenSet[TokenType]] = []
+    transicoes: dict[Tuple[int, str], int] = {}
+
+    # Estado inicial: closure da primeira produção (com ponto já adicionado)
+    i0 = define_closure.define_closure(tokentypes[0], tokentypes)
+    estado_inicial = frozenset(i0)
+    estados.append(estado_inicial)
+
+    fila = deque()
+    fila.append(estado_inicial)
+
+    while fila:
+        estado_atual = fila.popleft()
+        id_atual = estados.index(estado_atual)
+
+        # Identifica todos os símbolos que aparecem imediatamente após o ponto
+        simbolos_possiveis = set()
+        for item in estado_atual:
+            regex = item.regex
+            for i in range(len(regex) - 1):
+                if regex[i].type == RegexToken.SLR_DOT:
+                    simbolo = regex[i + 1].value
+                    simbolos_possiveis.add(simbolo)
+
+        for simbolo in simbolos_possiveis:
+            # Aplica GOTO ao estado atual com o símbolo
+            estado_goto_raw = goto.goto(estado_atual, simbolo, terminals, non_terminals, f"I{id_atual}")
+            print(">> Raw ",estado_goto_raw)
+
+            # Aplica CLOSURE a cada produção do resultado do GOTO
+            novo_estado = set()
+            for item in estado_goto_raw:
+                novo_estado.update(define_closure.define_closure(item, tokentypes))
+
+            novo_estado_fs = frozenset(novo_estado)
+
+            # Verifica se é um estado novo ou já existente
+            if novo_estado_fs not in estados:
+                estados.append(novo_estado_fs)
+                fila.append(novo_estado_fs)
+
+            id_destino = estados.index(novo_estado_fs)
+            transicoes[(id_atual, simbolo)] = id_destino
+
+    # Impressão opcional para debug
+    for i, estado in enumerate(estados):
+        print(f"\nEstado I{i}:")
+        for tok in estado:
+            print(f"  {tok.name}: {' '.join(str(token.value) for token in tok.regex if token.value is not None)}")
+
+    print("\nTransições (GOTO):")
+    for (origem, simbolo), destino in transicoes.items():
+        print(f"  GOTO(I{origem}, {simbolo}) = I{destino}")
+
+    return estados, transicoes
+
 
 # === GRAMÁTICA ===
 terminals = {"mais", "vezes", "id", "(", ")"}
@@ -22,69 +89,52 @@ grammar = [
     "F:==id",
 ]
 
+# grammar = [
+#     "S':== <S>",
+#     "S:== <S> or <A>",
+#     "S:== <A>",
+#     "A:== <A> and <B>",
+#     "A:== <B>",
+#     "B:== not <B>",
+#     "B:== (<S>)",
+#     "B:== true",
+#     "B:== false",
+# ]
+# terminals = {"or", "and", "not", "true", "false", "(", ")"}
+# non_terminals = {"S", "A", "B", "S'"}
+
+# Gerar TokenTypes
 tokentypes = regex_parser.get_regex_from_lines(grammar)
-print ("DEBUG tokentypes " , tokentypes )
+tokentypes[0].regex.insert(0, RegexToken(RegexToken.SLR_DOT, "."))  # Adiciona o ponto na primeira produção
 
-# === FUNÇÃO AUXILIAR PARA OBTER O ÍNDICE ORIGINAL DE UMA PRODUÇÃO ===
-def get_original_index(item: TokenType, base_productions: list[TokenType]) -> int:
-    regex_without_dot = [t for t in item.regex if t.type != RegexToken.SLR_DOT]
-    for i, prod in enumerate(base_productions):
-        if prod.name == item.name and prod.regex == regex_without_dot:
-            return i
-    raise ValueError(f"Produção não encontrada para o item: {item}")
+get_canonical_items(tokentypes, terminals, non_terminals)
 
-# === ITEM INICIAL ===
-start_index = 0
-i0 = define_closure.define_closure(tokentypes[start_index], tokentypes, start_index)
 
-print("DEBUG: i0: " , i0)
+# i0 = define_closure.define_closure(tokentypes_copy[0], tokentypes)
+# print(tokentypes[0])
 
-# === CONJUNTO CANÔNICO ===
-canonical_items = {"i0": i0}
-transitions = {}
-state_queue = [("i0", i0)]
-state_counter = itertools.count(start=1)
+# for tokentype in i0:
+#     print(tokentype.name, ":", tokentype.regex)
 
-def state_exists(new_state):
-    for name, state in canonical_items.items():
-        if state == new_state:
-            return name
-    return None
+# print("\n\n")
 
-# === CONSTRUÇÃO DOS ESTADOS ===
-while state_queue:
-    current_name, current_set = state_queue.pop(0)
-    # Para todo simbolo terminal ou não terminal da gramatica
-    for symbol in terminals.union(non_terminals):
-        # Obter o go to para cada simbolo
-        goto_result = goto.goto(current_set, symbol, terminals, non_terminals, current_name)
-        if goto_result:
-            closure_result = set()
-            for item in goto_result:
-                print("DEBUG go_to item " , item, " for symbol: ", symbol, " state: ", current_name)
-                try:
-                    prod_index = get_original_index(item, tokentypes)
-                    closure_result.update(define_closure.define_closure(item, tokentypes, prod_index))
-                    print("DEBUG closure result  " , closure_result)
-                except ValueError:
-                    continue
-
-            existing_name = state_exists(closure_result)
-            if existing_name is None:
-                new_name = f"i{next(state_counter)}"
-                canonical_items[new_name] = closure_result
-                state_queue.append((new_name, closure_result))
-                transitions[(current_name, symbol)] = new_name
-            else:
-                transitions[(current_name, symbol)] = existing_name
-
-# === EXIBIÇÃO DOS ITENS ===
-for state_name, item_set in canonical_items.items():
-    print(f"Conjunto de itens {state_name}:")
-    for tokentype in sorted(item_set, key=lambda t: t.name):
-        print(f"  TokenType: {tokentype.name}, Regex: {tokentype.regex}")
-    print()
-
-print("Transições:")
-for (src, symbol), dest in transitions.items():
-    print(f"  {src} -- {symbol} --> {dest}")
+# goto_i0_e = goto.goto(i0, "E", terminals, non_terminals, "i0")
+# i1 = set()
+# for tokentype in goto_i0_e:
+#     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
+#     i1.update(tokentype_closure)
+    
+# print("i1:")
+# for tokentype in i1:
+#     print(tokentype.name, ":", tokentype.regex)
+    
+    
+# goto_i1_mais = goto.goto(i1, "mais", terminals, non_terminals, "i1")
+# i2 = set()
+# for tokentype in goto_i1_mais:
+#     tokentype_closure = define_closure.define_closure(tokentype, tokentypes)
+#     i2.update(tokentype_closure)
+    
+# print("\ni2:")
+# for tokentype in i2:
+#     print(tokentype.name, ":", tokentype.regex)

@@ -97,8 +97,8 @@ def goto(
                     )
 
     if not new_tokentypes:
-        print(
-            f"DEBUG i: {current_name} No valid transitions found for symbol '{x_symbol}' in the given token types."
-        )
+        # print(
+        #     f"DEBUG i: {current_name} No valid transitions found for symbol '{x_symbol}' in the given token types."
+        # )
         return set()
     return new_tokentypes
