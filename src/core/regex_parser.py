@@ -40,6 +40,17 @@ def tokenize_regex(regex: str) -> list[RegexToken]:
             tokens.append(RegexToken(RegexToken.REF, ref_name))
             i = j + 1
 
+        elif c == "'":
+            # Tratar aspas simples como delimitador de string
+            j = i + 1
+            while j < len(regex) and regex[j] != "'":
+                j += 1
+            if j == len(regex):
+                raise ValueError("Aspas simples não fechadas.")
+            string_value = regex[i+1:j]
+            tokens.append(RegexToken(RegexToken.CHAR, string_value))
+            i = j + 1
+
         elif c == '[':
             j = i + 1
             while j < len(regex) and regex[j] != ']':

@@ -10,7 +10,7 @@ grammar = [
     "T:== <F><T'>",
     "T':== a<F><T'>",
     "T':== 123",
-    "F:== n<F>",
+    "F:== n'('<F>')'",
     "F:== identificador",
 ]
 
