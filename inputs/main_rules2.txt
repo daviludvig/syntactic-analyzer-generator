@@ -1,0 +1,7 @@
+S ::= beg id semicolon FUNCLIST end semicolon id_com_numero_antes
+FUNCLIST ::= FUNCTION FUNCLIST
+FUNCLIST ::= &
+FUNCTION ::= func id arrow id arrow id semicolon RET_STMT end semicolon
+RET_STMT ::= ret id MATH_OP id semicolon
+MATH_OP ::= math
+
