@@ -1,7 +1,20 @@
 
 from core.slr_table import Action
+from model.symbol_table import TokenType, Token
 
-def LR_parsing(input_dict, action_dict, initial_state=0):
+def LR_parsing(input : list[Token], action_dict, initial_state=0):
+
+    input_dict = {}
+
+    # Coloca input em dict
+    for i in range(len(input)):
+        if input[i].tokentype == "PR":
+            # Seleciona o lexema associado
+            input_dict[i] = str(input[i].lexeme)
+        else:
+            input_dict[i] = str(input[i].tokentype)
+
+
     states_dict = {0: initial_state}
     states_dict_top = 0
     input_ptr = 0
