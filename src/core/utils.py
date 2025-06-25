@@ -53,7 +53,7 @@ def get_non_terminals(grammar: set[str]) -> set[str]:
     non_terminals = set()
     for prod in grammar:
         cabeca,corpo = prod.split(SEPARATOR)
-        non_terminals.update(cabeca)
+        non_terminals.add(cabeca)
 
     return non_terminals
 

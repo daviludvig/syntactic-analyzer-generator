@@ -1,5 +1,5 @@
 
-from core.slr_table import SLRTable, Action
+from core.slr_table import Action
 
 def LR_parsing(input_dict, action_dict, initial_state=0):
     states_dict = {0: initial_state}
@@ -15,10 +15,8 @@ def LR_parsing(input_dict, action_dict, initial_state=0):
 
         # Seleciona a cédula da tabela que contem essa combinação
         action = action_dict[(state, symbol)]
-        print (f'debug {state} , {symbol} , {action}')
 
         if action is None:
-            print(f"Erro de sintaxe: ação indefinida para (estado {state}, símbolo '{symbol}')")
             return False
 
         if action.action_type == Action.SHIFT:
@@ -28,7 +26,6 @@ def LR_parsing(input_dict, action_dict, initial_state=0):
             states_dict[states_dict_top] = t
             # Aponta para o próximo simbolo da entrada
             input_ptr += 1
-            print(f"Shift: símbolo '{symbol}' → estado {t}")
 
         elif action.action_type == Action.REDUCE:
             # É o estado reduzido e a produção correspondente
@@ -36,26 +33,20 @@ def LR_parsing(input_dict, action_dict, initial_state=0):
             # Retira estados da fila
             states_dict_top = states_dict_top - pop_len
             if states_dict_top < 0:
-                print("Erro: underflow na pilha.")
                 return False
             # Ajusta qual é o estado em análise
             t = states_dict[states_dict_top]
             # Verifica para onde esse estado vai com a ação do reduce
-            print(f'debug reduce {t}, {symbol}, {action_dict[(t, head)]}')
             goto_action = action_dict[(t, head)]                
             if goto_action is None:
-                print(f"Erro: goto indefinido para (estado {t}, não-terminal '{head}')")
                 return False
             # Ajusta o ponteiro do estado atual em análise
             states_dict_top += 1
             # Inclui no dicionario o estado alcançado
             states_dict[states_dict_top] = goto_action.transicao
-            #print(f"Reduce: {head} → {' '.join(pop_len)}")
 
         elif action.action_type == Action.ACCEPT:
-            print("Aceito: a palavra pertence à linguagem!")
             return True
 
         else:
-            print("Erro de análise.")
             return False

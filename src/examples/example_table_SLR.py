@@ -3,7 +3,6 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
-#import example_get_canonical_items as example_canonical_items
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
 import core.slr_table as slr_table
@@ -26,9 +25,6 @@ gramatica = [
     "B:== true",
     "B:== false",
 ]
-
-#terminals = {"or", "and", "not", "true", "false", "lparen", "rparen"}
-#non_terminals = {"S", "A", "B", "S'"}
 
 tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
