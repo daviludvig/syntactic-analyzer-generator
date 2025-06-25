@@ -1,5 +1,10 @@
+import sys
+import os
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
+
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
+import core.slr_table as slr_table
 
 grammar = [
     "S':== <S>",
@@ -29,6 +34,11 @@ for i, estado in enumerate(estados):
             f"  {tok.name}: {' '.join(str(token.value) for token in tok.regex if token.value is not None)}"
         )
 
+actions_shifts = []
+
 print("\nTransições (GOTO):")
 for (origem, simbolo), destino in transicoes.items():
     print(f"  GOTO(I{origem}, {simbolo}) = I{destino}")
+    #actions_shifts.append(slr_table.Action(slr_table.Action.SHIFT, destino))
+
+

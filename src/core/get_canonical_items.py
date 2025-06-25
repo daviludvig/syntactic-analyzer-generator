@@ -3,9 +3,9 @@ import core.goto as goto
 import core.define_closure as define_closure
 from model.symbol_table import RegexToken, TokenType
 from collections import deque
+from core.slr_table import Action
 
-
-def get_canonical_items(tokentypes: list[TokenType]):
+def get_canonical_items(tokentypes: list[TokenType], start_symbol: str):
 
     # Cada estado será um conjunto imutável (frozenset) de TokenTypes
     estados: list[FrozenSet[TokenType]] = []
@@ -51,4 +51,6 @@ def get_canonical_items(tokentypes: list[TokenType]):
             id_destino = estados.index(novo_estado_fs)
             transicoes[(id_atual, simbolo)] = id_destino
 
+    estado_destino = transicoes[(0,start_symbol)]
+    transicoes[(estado_destino, "$")] = Action.ACCEPT
     return estados, transicoes
