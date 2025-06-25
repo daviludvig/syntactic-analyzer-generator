@@ -25,7 +25,7 @@ tokentypes_copy[0].regex.insert(
     0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, ".")
 )  # Adiciona o ponto na primeira produção
 
-estados, transicoes = get_canonical_items.get_canonical_items(tokentypes_copy)
+estados, transicoes = get_canonical_items.get_canonical_items(tokentypes_copy, 'S')
 
 for i, estado in enumerate(estados):
     print(f"\nEstado I{i}:")

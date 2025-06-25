@@ -3,7 +3,6 @@ import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
-#import example_get_canonical_items as example_canonical_items
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
 import core.slr_table as slr_table
@@ -11,6 +10,9 @@ import core.utils as utils
 import model.symbol_table as symbol_table
 import core.define_first as define_first
 import core.define_follow as define_follow
+
+import core.LR_parsing as parser
+
 
 gramatica = [
     "S':== <S>",
@@ -23,9 +25,6 @@ gramatica = [
     "B:== true",
     "B:== false",
 ]
-
-#terminals = {"or", "and", "not", "true", "false", "lparen", "rparen"}
-#non_terminals = {"S", "A", "B", "S'"}
 
 tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
@@ -50,6 +49,8 @@ table = slr_table.SLRTable()
 
 action_dict = {}
 
+print (f'não terminais {non_terminals}')
+
 # Adiciona SHIFT, ACCEPT e GOTO na tabela SLR
 for (origem, simbolo), destino in transicoes.items():
     if (destino == slr_table.Action.ACCEPT ) and (simbolo == "$"):
@@ -71,11 +72,16 @@ for (origem, simbolo), destino in transicoes.items():
 for i, estado in enumerate(estados):
     for prod in estado:
         if prod.regex[-1].type == symbol_table.RegexToken.SLR_DOT:
-            print(prod.regex)
+            #print(prod.regex)
             cabeca_follow = follows[prod.name]  # O resultado disso é um set de terminais (follows da cabeca)
 
 
             for simbolo in cabeca_follow:
                 action = slr_table.Action(slr_table.Action.REDUCE, [prod.name, len(prod.regex[:-1])])
                 action_dict[((i, simbolo))] = action
-                print(i, simbolo, action)
+                #print(i, simbolo, action)
+
+print(f'debug dicionario para parser: {action_dict}')
+
+entrada = {0: 'not', 1: 'lparen', 2: 'true', 3: 'or', 4:'false', 5:'rparen', 6:'and', 7:'true', 8:'$'}
+resposta = parser.LR_parsing(entrada, action_dict)
