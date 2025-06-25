@@ -1,5 +1,4 @@
 from __future__ import annotations
-from . import utils
 from model.symbol_table import TokenType, RegexToken
 from typing import List, Dict, Set
 
@@ -37,11 +36,13 @@ def follow(
     gr_firsts: Dict[str, Set[str]],
     changed: List[bool],
 ) -> None:
-
+    # É a cabeça da produção
     A = current_tokentype.name
+    # É a produção
     production = current_tokentype.regex
 
     for i, token in enumerate(production):
+        # Se for um não terminal
         if token.type == RegexToken.REF:
             B = token.value
             follow_B = gr_follows[B]
@@ -70,10 +71,12 @@ def compute_first_of_sequence(
     nullable = True
 
     for token in sequence:
+        # Se for um terminal
         if token.type == RegexToken.CHAR:
             result.add(token.value)
             nullable = False
             break
+        # Se for um não terminal
         elif token.type == RegexToken.REF:
             token_first = gr_firsts.get(token.value, set())
             result.update(token_first - {"&"})
