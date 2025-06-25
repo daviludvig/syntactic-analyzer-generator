@@ -5,7 +5,7 @@ from model.symbol_table import RegexToken, TokenType
 from collections import deque
 from core.slr_table import Action
 
-def get_canonical_items(tokentypes: list[TokenType]):
+def get_canonical_items(tokentypes: list[TokenType], start_symbol: str):
 
     # Cada estado será um conjunto imutável (frozenset) de TokenTypes
     estados: list[FrozenSet[TokenType]] = []

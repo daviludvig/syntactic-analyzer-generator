@@ -9,6 +9,8 @@ import core.regex_parser as regex_parser
 import core.slr_table as slr_table
 import core.utils as utils
 import model.symbol_table as symbol_table
+import core.define_first as define_first
+import core.define_follow as define_follow
 
 gramatica = [
     "S':== <S>",
@@ -22,18 +24,24 @@ gramatica = [
     "B:== false",
 ]
 
-terminals = {"or", "and", "not", "true", "false", "lparen", "rparen"}
-non_terminals = {"S", "A", "B", "S'"}
+#terminals = {"or", "and", "not", "true", "false", "lparen", "rparen"}
+#non_terminals = {"S", "A", "B", "S'"}
 
-tokentypes = regex_parser.get_regex_from_lines(gramatica, terminals)
+tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
 tokentypes_copy = tokentypes.copy()
 tokentypes_copy[0].regex.insert(
     0, regex_parser.RegexToken(regex_parser.RegexToken.SLR_DOT, ".")
 )  # Adiciona o ponto na primeira produção
 estados, transicoes = get_canonical_items.get_canonical_items(
-    tokentypes_copy, terminals, non_terminals, "S"
+    tokentypes_copy, "S"
 )
+
+firsts = define_first.define_first(tokentypes)
+
+
+follows = define_follow.define_follow(tokentypes, firsts, start_symbol="S")
+
 
 print("\n Construir tabela SLR:")
 
@@ -64,9 +72,10 @@ for i, estado in enumerate(estados):
     for prod in estado:
         if prod.regex[-1].type == symbol_table.RegexToken.SLR_DOT:
             print(prod.regex)
-            cabeca_follow = gr_follows[prod.name]  # O resultado disso é um set de terminais (follows da cabeca)
+            cabeca_follow = follows[prod.name]  # O resultado disso é um set de terminais (follows da cabeca)
 
 
             for simbolo in cabeca_follow:
-                action = slr_table.Action(slr_table.Action.REDUCE, [prod.regex.name, len(prod.regex[:-1])])
-                action_dict[((i, simbolo))]
+                action = slr_table.Action(slr_table.Action.REDUCE, [prod.name, len(prod.regex[:-1])])
+                action_dict[((i, simbolo))] = action
+                print(i, simbolo, action)
