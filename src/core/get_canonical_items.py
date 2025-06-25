@@ -5,21 +5,29 @@ from model.symbol_table import RegexToken, TokenType
 from collections import deque
 from core.slr_table import Action
 
+
 def get_canonical_items(tokentypes: list[TokenType], start_symbol: str):
 
     # Cada estado será um conjunto imutável (frozenset) de TokenTypes
     estados: list[FrozenSet[TokenType]] = []
+    # As transições serão um dicionário onde a chave é uma tupla (estado_atual, símbolo) e o valor é o estado de destino
     transicoes: dict[Tuple[int, str], int] = {}
 
-    # Estado inicial: closure da primeira produção (com ponto já adicionado)
+    # Estado inicial: closure da primeira produção (**com ponto já adicionado**)
     i0 = define_closure.define_closure(tokentypes[0], tokentypes)
     estado_inicial = frozenset(i0)
     estados.append(estado_inicial)
 
+    # Fila para explorar os estados
+    # Usamos deque para eficiência na remoção do primeiro elemento
+    # e na adição de novos estados
     fila = deque()
+    # Fila começa com o i0 expandido
     fila.append(estado_inicial)
 
+    # Enquanto houver estados na fila a serem processados
     while fila:
+        # Pega o primeiro estado da fila
         estado_atual = fila.popleft()
         id_atual = estados.index(estado_atual)
 
@@ -51,6 +59,8 @@ def get_canonical_items(tokentypes: list[TokenType], start_symbol: str):
             id_destino = estados.index(novo_estado_fs)
             transicoes[(id_atual, simbolo)] = id_destino
 
-    estado_destino = transicoes[(0,start_symbol)]
+    # Adiciona a transição de aceitação
+    # i0 -> start_symbol -> estado_destino -> $ -> Action.ACCEPT
+    estado_destino = transicoes[(0, start_symbol)]
     transicoes[(estado_destino, "$")] = Action.ACCEPT
     return estados, transicoes
