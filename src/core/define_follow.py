@@ -6,7 +6,6 @@ from typing import List, Dict, Set
 
 def define_follow(
     grammars_tokentypes: List[TokenType],
-    terminals: Set[str],
     gr_firsts: Dict[str, Set[str]],
     start_symbol: str,
 ) -> Dict[str, Set[str]]:
@@ -25,7 +24,6 @@ def define_follow(
                 grammars_tokentypes,
                 gr_follows,
                 gr_firsts,
-                terminals,
                 changed,
             )
 
@@ -37,7 +35,6 @@ def follow(
     tokentypes: List[TokenType],
     gr_follows: Dict[str, Set[str]],
     gr_firsts: Dict[str, Set[str]],
-    terminals: Set[str],
     changed: List[bool],
 ) -> None:
 
@@ -54,7 +51,7 @@ def follow(
             beta = production[i + 1 :]
 
             # Regra 2
-            first_beta = compute_first_of_sequence(beta, gr_firsts, terminals)
+            first_beta = compute_first_of_sequence(beta, gr_firsts)
             follow_B.update(first_beta - {"&"})
 
             # Regra 3
@@ -66,7 +63,7 @@ def follow(
 
 
 def compute_first_of_sequence(
-    sequence: List[RegexToken], gr_firsts: Dict[str, Set[str]], terminals: Set[str]
+    sequence: List[RegexToken], gr_firsts: Dict[str, Set[str]]
 ) -> Set[str]:
 
     result = set()

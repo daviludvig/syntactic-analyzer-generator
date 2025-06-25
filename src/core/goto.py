@@ -34,42 +34,23 @@ def get_transitions_dot(tokentypes: Set[TokenType]) -> Set[str]:
     return transitions
 
 
-def goto(
-    i: Set[TokenType], x_symbol: str, terminals: set[str], non_terminals: set[str]
-) -> Set[TokenType]:
+def goto(i: Set[TokenType], x_symbol: str) -> Set[TokenType]:
     new_tokentypes = set()
 
-    # Para cada item do estado em analise
     for tokentype in i:
         regex = tokentype.regex
         dot_index = find_dot_in_regex(regex)
-        if dot_index == -1:
-            print(
-                f"TokenType {tokentype.name} does not contain a slr_dot (.) in its regex."
-            )
+        if dot_index == -1 or dot_index + 1 >= len(regex):
             continue
 
-        # Formar maior sequência de CHARs a partir da posição após o ponto
-        # Caso em que o terminal é formado por mais de um char
-        j = dot_index + 1
-        composed = ""
-        longest_match = None
-        match_end = j
+        next_token = regex[dot_index + 1]
 
-        while j < len(regex) and regex[j].type == RegexToken.CHAR:
-            composed += regex[j].value
-            if composed in terminals or composed in non_terminals:
-                longest_match = composed
-                match_end = j + 1  # posição logo após o último CHAR válido
-            j += 1
-
-        # Se encontrou um símbolo composto válido
-        if longest_match == x_symbol:
+        # Se o símbolo após o ponto corresponde ao símbolo de transição esperado
+        if next_token.value == x_symbol:
             new_regex = (
                 regex[:dot_index]
-                + regex[dot_index + 1 : match_end]
-                + [RegexToken(RegexToken.SLR_DOT, ".")]
-                + regex[match_end:]
+                + [next_token, RegexToken(RegexToken.SLR_DOT, ".")]
+                + regex[dot_index + 2 :]
             )
             new_tokentypes.add(
                 TokenType(
@@ -79,26 +60,4 @@ def goto(
                 )
             )
 
-        # Também trata símbolos simples do tipo REF ou CHAR (não compostos)
-        elif dot_index + 1 < len(regex):
-            token = regex[dot_index + 1]
-            if token.type == RegexToken.REF or token.type == RegexToken.CHAR:
-                if token.value == x_symbol:
-                    # Move o ponto "."
-                    new_regex = (
-                        regex[:dot_index]
-                        + [token]
-                        + [RegexToken(RegexToken.SLR_DOT, ".")]
-                        + regex[dot_index + 2 :]
-                    )
-                    new_tokentypes.add(
-                        TokenType(
-                            tokentype.name,
-                            new_regex,
-                            tokentype.dfa.copy() if tokentype.dfa else None,
-                        )
-                    )
-
-    if not new_tokentypes:
-        return set()
     return new_tokentypes
