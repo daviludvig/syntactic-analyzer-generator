@@ -4,4 +4,4 @@ func menos -> x -> y;
 func div -> x -> y;
   ret x / y;
 end;
-123identificador
+identificador
