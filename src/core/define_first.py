@@ -28,9 +28,7 @@ from model.symbol_table import TokenType, RegexToken
 from typing import List, Dict, Set
 
 
-def define_first(
-    grammars_tokentypes: list[TokenType], terminals: Set[str]
-) -> Dict[str, Set[str]]:
+def define_first(grammars_tokentypes: list[TokenType]) -> Dict[str, Set[str]]:
     gr_firsts = {}
 
     for grammar_tokentype in grammars_tokentypes:
@@ -40,9 +38,7 @@ def define_first(
             gr_firsts[grammar_tokentype.name] = set()
 
     for grammar_tokentype in grammars_tokentypes:
-        first(
-            grammar_tokentype.name, grammars_tokentypes, gr_firsts, terminals=terminals
-        )
+        first(grammar_tokentype.name, grammars_tokentypes, gr_firsts)
 
     print(gr_firsts)
     return gr_firsts
@@ -53,7 +49,6 @@ def first(
     name: str,
     tokentypes: List[TokenType],
     gr_firsts: Dict[str, Set[str]],
-    terminals: Set[str],
     visited: Set[str] = None,
 ) -> Set[str]:
 
@@ -85,17 +80,10 @@ def first(
 
             if token.type == RegexToken.CHAR:
                 # tenta formar o maior terminal possível com sequência de CHARs
-                j = i
-                composed = ""
-                longest_match = None
-                while j < len(grammar) and grammar[j].type == RegexToken.CHAR:
-                    composed += grammar[j].value
-                    if composed in terminals:
-                        longest_match = composed
-                    j += 1
+                value = token.value
 
-                if longest_match:
-                    curr_gr_firsts.add(longest_match)
+                if value:
+                    curr_gr_firsts.add(value)
                     nullable = False
                     break
                 else:
@@ -105,7 +93,7 @@ def first(
 
             elif token.type == RegexToken.REF:
                 ref_name = token.value
-                ref_first = first(ref_name, tokentypes, gr_firsts, terminals, visited)
+                ref_first = first(ref_name, tokentypes, gr_firsts, visited)
                 curr_gr_firsts.update(ref_first - {"&"})
 
                 if "&" in ref_first:
