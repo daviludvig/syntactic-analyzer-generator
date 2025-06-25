@@ -1,0 +1,1 @@
+beg, id, semicolon, func, id, arrow, id, arrow, id, semicolon, ret, id, math, id, semicolon, func, id, arrow, id, arrow, id, semicolon, ret, id, math, id, semicolon, end, semicolon, id_com_numero_antes
