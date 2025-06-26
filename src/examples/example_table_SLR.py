@@ -50,16 +50,11 @@ table = slr_table.SLRTable()
 
 action_dict = {}
 
-print (f'não terminais {non_terminals}')
-
 table.populate(estados, transicoes, follows, non_terminals)
 
-print(f'debug dicionario para parser: {table.table}')
 
-input_file = "inputs/tokens2.txt"
-
-entrada = utils.get_tokens_from_file(input_file)
-
-resposta = parser.LR_parsing(entrada, table.table)
-
-print(f'\nEntrada: {entrada}, Resposta: {resposta}')
+for x, y in table.table.items():
+    if y.action_type == 'reduce':
+        print(f' Estado {x[0]}, símbolo {x[1]} -> ação {y.action_type} por {y.transicao[0]}')
+    else:
+        print(f' Estado {x[0]}, símbolo {x[1]} -> ação {y.action_type} por {y.transicao}')
