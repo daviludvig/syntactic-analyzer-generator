@@ -4,7 +4,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
-# import core.slr_table as slr_table
 from core.slr_table import SLRTable, Action
 import core.utils as utils
 import model.symbol_table as symbol_table
