@@ -160,7 +160,13 @@ def main() -> None:
     print("=========================================================\n")
 
     # Análise sintática
-    analysis_result = parser.LR_parsing(input, slr_table.table)
+    try:
+        analysis_result = parser.LR_parsing(input, slr_table.table)
+    except Exception as e:
+        print("[X] Erro ao executar a análise sintática.")
+        print(f"Tipo do erro: {type(e).__name__}")
+        print(f"Mensagem: {e}")
+        analysis_result = False
 
     print("==================== RESULTADO ====================")
     if analysis_result:
