@@ -15,6 +15,21 @@ import core.define_follow as define_follow
 import core.LR_parsing as parser
 from core.utils import get_tokens_from_file, get_grammar_from_file
 
+def write_in_files(firsts, follows, slr_table, final_analysis ) -> None:
+    """
+    Escreve os resultados encontrados em um arquivo de saída.
+    """
+    utils.prepare_output_directory()
+    for dfa in dfas:
+        if dfa is not None:
+            utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/automatos/{dfa.name}.txt", dfa.getTabularFormat())
+    
+    for token in tokens:
+        utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/tokens.txt", str(token))
+        
+    utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/symbol_table.txt", str(symbol_table))
+
+
 
 def main() -> None:
     """
