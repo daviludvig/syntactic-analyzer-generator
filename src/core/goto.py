@@ -19,39 +19,31 @@ def get_element_after_dot(regex: list[RegexToken], dot_index: int) -> str:
     return None
 
 
-def get_transitions_dot(tokentypes: Set[TokenType]) -> Set[str]:
-    """Obtém os símbolos que podem ser alcançados a partir do ponto (.) em cada TokenType.
-    Ex. T->.E, E->.id, E->.(E)
-    Deve retornar {'E', 'id', '('}"""
-    transitions = set()
-    for tokentype in tokentypes:
-        regex = tokentype.regex
-        dot_index = find_dot_in_regex(regex)
-        if dot_index != -1:
-            element_after_dot = get_element_after_dot(regex, dot_index)
-            if element_after_dot:
-                transitions.add(element_after_dot)
-    return transitions
-
-
 def goto(i: Set[TokenType], x_symbol: str) -> Set[TokenType]:
+    # Cria um novo conjunto de TokenTypes para armazenar os resultados
     new_tokentypes = set()
 
+    # Para cada produção dentro do item
     for tokentype in i:
+        # Pega o regex da produção que está sendo analisada
         regex = tokentype.regex
         dot_index = find_dot_in_regex(regex)
+        # Se não houver ponto ou se o ponto for o último símbolo, pula para a próxima produção
         if dot_index == -1 or dot_index + 1 >= len(regex):
             continue
 
+        # Obtém o símbolo imediatamente após o ponto
         next_token = regex[dot_index + 1]
 
         # Se o símbolo após o ponto corresponde ao símbolo de transição esperado
         if next_token.value == x_symbol:
+            # Cria uma nova regex com o ponto movido para a direita
             new_regex = (
                 regex[:dot_index]
                 + [next_token, RegexToken(RegexToken.SLR_DOT, ".")]
                 + regex[dot_index + 2 :]
             )
+            # Adiciona a nova produção ao conjunto de TokenTypes
             new_tokentypes.add(
                 TokenType(
                     tokentype.name,
