@@ -24,6 +24,7 @@ gramatica = [
     "B:== lparen<S>rparen",
     "B:== true",
     "B:== false",
+    "B:== id",
 ]
 
 tokentypes = regex_parser.get_regex_from_lines(gramatica)
@@ -51,37 +52,14 @@ action_dict = {}
 
 print (f'não terminais {non_terminals}')
 
-# Adiciona SHIFT, ACCEPT e GOTO na tabela SLR
-for (origem, simbolo), destino in transicoes.items():
-    if (destino == slr_table.Action.ACCEPT ) and (simbolo == "$"):
-        # Caso simbolo seja final de sentença
-        action = slr_table.Action(slr_table.Action.ACCEPT, "acc")
-        action_dict[(origem, simbolo)] = action
-    elif simbolo not in non_terminals:
-        # Caso simbolo seja um terminal
-        action = slr_table.Action(slr_table.Action.SHIFT, destino)
-        action_dict[(origem, simbolo)] = action
-    elif simbolo in non_terminals:
-        # Caso simbolo seja um não terminal
-        action = slr_table.Action(slr_table.Action.GOTO, destino)
-        action_dict[(origem, simbolo)] = action
+table.populate(estados, transicoes, follows, non_terminals)
 
+print(f'debug dicionario para parser: {table.table}')
 
+input_file = "inputs/tokens2.txt"
 
-# Adiciona o REDUCE na tabela SLR
-for i, estado in enumerate(estados):
-    for prod in estado:
-        if prod.regex[-1].type == symbol_table.RegexToken.SLR_DOT:
-            #print(prod.regex)
-            cabeca_follow = follows[prod.name]  # O resultado disso é um set de terminais (follows da cabeca)
+entrada = utils.get_tokens_from_file(input_file)
 
+resposta = parser.LR_parsing(entrada, table.table)
 
-            for simbolo in cabeca_follow:
-                action = slr_table.Action(slr_table.Action.REDUCE, [prod.name, len(prod.regex[:-1])])
-                action_dict[((i, simbolo))] = action
-                #print(i, simbolo, action)
-
-print(f'debug dicionario para parser: {action_dict}')
-
-entrada = {0: 'not', 1: 'lparen', 2: 'true', 3: 'or', 4:'false', 5:'rparen', 6:'and', 7:'true', 8:'$'}
-resposta = parser.LR_parsing(entrada, action_dict)
+print(f'\nEntrada: {entrada}, Resposta: {resposta}')

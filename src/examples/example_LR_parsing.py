@@ -37,31 +37,7 @@ def main():
     non_terminals = utils.get_non_terminals(gramatica)
     slr_table = SLRTable()
 
-    # Adiciona SHIFT, ACCEPT e GOTO na tabela SLR
-    for (origem, simbolo), destino in transicoes.items():
-        if (destino == Action.ACCEPT ) and (simbolo == "$"):
-            # Caso simbolo seja final de sentença
-            action = Action(Action.ACCEPT, "acc")
-            slr_table.table[(origem, simbolo)] = action
-        elif simbolo not in non_terminals:
-            # Caso simbolo seja um terminal
-            action = Action(Action.SHIFT, destino)
-            slr_table.table[(origem, simbolo)] = action
-        elif simbolo in non_terminals:
-            # Caso simbolo seja um não terminal
-            action = Action(Action.GOTO, destino)
-            slr_table.table[(origem, simbolo)] = action
-
-
-    # Adiciona o REDUCE na tabela SLR
-    for i, estado in enumerate(estados):
-        for prod in estado:
-            if prod.regex[-1].type == symbol_table.RegexToken.SLR_DOT:
-                cabeca_follow = follows[prod.name]  # cabeca_follow é um set de terminais (follows da cabeca)
-
-                for simbolo in cabeca_follow:
-                    action = Action(Action.REDUCE, [prod.name, len(prod.regex[:-1])])
-                    slr_table.table[((i, simbolo))] = action
+    slr_table.populate(estados, transicoes, follows, non_terminals)
                     
     print(f' Grámatica em análise:')
     for linha in gramatica:

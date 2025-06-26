@@ -7,11 +7,14 @@ def LR_parsing(token_list, action_dict, initial_state=0):
 
     # Coloca input em dict
     for i in range(len(token_list)):
-        if token_list[i][1] == "PR":
-            # Seleciona o lexema associado
-            input_dict[i] = token_list[i][0]
-        else:
-            input_dict[i] = token_list[i][1].lower()
+        try:
+            if token_list[i][1] == "PR":
+                # Seleciona o lexema associado
+                input_dict[i] = token_list[i][0]
+            else:
+                input_dict[i] = token_list[i][1].lower()
+        except:
+            print(f"Erro ao processar o token {i}: {token_list[i]}")
     input_dict[i+1] = "$"
 
     states_dict = {0: initial_state}
