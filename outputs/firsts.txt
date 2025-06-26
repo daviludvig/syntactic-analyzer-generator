@@ -1,4 +1,0 @@
-  Símbolo S : FIRST = {'not', 'lparen', 'false', 'true'}
-  Símbolo A : FIRST = {'not', 'lparen', 'false', 'true'}
-  Símbolo B : FIRST = {'false', 'lparen', 'true', 'not'}
-

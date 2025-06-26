@@ -1,4 +1,0 @@
-  Símbolo S : FOLLOW = {'rparen', 'or', '$'}
-  Símbolo A : FOLLOW = {'and', 'rparen', 'or', '$'}
-  Símbolo B : FOLLOW = {'and', 'rparen', 'or', '$'}
-
