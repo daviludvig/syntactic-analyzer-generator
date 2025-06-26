@@ -89,3 +89,21 @@ def get_non_terminals(grammar: set[str]) -> set[str]:
     return non_terminals
 
 
+def format_canonical_collection(estados, transicoes) -> str:
+    output = []
+
+    # Estados (coleção canônica)
+    for i, estado in enumerate(estados):
+        output.append(f"\nEstado I{i}:")
+        for tok in estado:
+            regra = ' '.join(
+                str(token.value) for token in tok.regex if token.value is not None
+            )
+            output.append(f"  {tok.name}: {regra}")
+
+    # Transições (GOTO)
+    output.append("\nTransições (GOTO):")
+    for (origem, simbolo), destino in transicoes.items():
+        output.append(f"  GOTO(I{origem}, {simbolo}) = I{destino}")
+
+    return "\n".join(output)

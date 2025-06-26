@@ -1,0 +1,1 @@
+[OK] A palavra pertence à linguagem!

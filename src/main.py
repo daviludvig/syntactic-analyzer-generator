@@ -62,19 +62,36 @@ def format_slr_table(slr_table_obj: SLRTable) -> str:
     return formatted
 
 
-# def write_in_files(firsts, follows, slr_table, final_analysis ) -> None:
-#     """
-#     Escreve os resultados encontrados em um arquivo de saída.
-#     """
-#     utils.prepare_output_directory()
-#     for dfa in dfas:
-#         if dfa is not None:
-#             utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/automatos/{dfa.name}.txt", dfa.getTabularFormat())
+def write_in_files(firsts, follows, slr_table, final_analysis, estados, transicoes) -> None:
+    """
+    Escreve os resultados encontrados em um arquivo de saída.
+    """
+    first_output_str = ""
+    for key, value in firsts.items():
+        if not value == set():
+            first_output_str += f"  Símbolo {key} : FIRST = {value}\n"
+    utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/firsts.txt", first_output_str)
 
-#     for token in tokens:
-#         utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/tokens.txt", str(token))
-
-#     utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/symbol_table.txt", str(symbol_table))
+    follow_output_str = ""
+    for key, value in follows.items():
+        if not value == set():
+            follow_output_str += f"  Símbolo {key} : FOLLOW = {value}\n"
+    utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/follows.txt", follow_output_str)
+    
+    tabela_formatada_str = format_slr_table(slr_table)
+    utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/slr_table.txt", tabela_formatada_str)
+    
+    if final_analysis:
+        utils.write_in_file(
+            f"{utils.OUTPUT_PATH_DIR}/analysis_result.txt", "[OK] A palavra pertence à linguagem!"
+        )
+    else:
+        utils.write_in_file(
+            f"{utils.OUTPUT_PATH_DIR}/analysis_result.txt", "[X] Erro de análise."
+        )
+        
+    formatted_canonical_collection = utils.format_canonical_collection(estados, transicoes)
+    utils.write_in_file(f"{utils.OUTPUT_PATH_DIR}/canonical_collection.txt", formatted_canonical_collection)
 
 
 def main() -> None:
@@ -92,16 +109,15 @@ def main() -> None:
 
     if not utils.file_exists(main_rules) or not utils.file_exists(token_list):
         print(
-            f"Arquivo de entrada ou gramática não encontrado: {main_rules} ou {token_list}"
+            f"[Erro] Arquivo de entrada ou gramática não encontrado:\n  - {main_rules}\n  - {token_list}"
         )
         sys.exit(1)
 
     gramatica = get_grammar_from_file(main_rules)
-
-    print(f" Grámatica em análise:")
+    print("\n==================== GRAMÁTICA ====================")
     for linha in gramatica:
-        print(linha)
-    print("\n")
+        print(f"  {linha}")
+    print("===================================================\n")
 
     tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
@@ -111,44 +127,52 @@ def main() -> None:
     )  # Adiciona o ponto na primeira produção
     estados, transicoes = get_canonical_items.get_canonical_items(tokentypes_copy, "S")
 
+    # FIRST
     firsts = define_first.define_first(tokentypes)
-
-    print(f" First da gramática:")
+    print("==================== FIRST ====================")
     for key, value in firsts.items():
-        print(f" Simbolo {key} : first : {value}")
-    print("\n")
+        if not value == set():
+            print(f"  Símbolo {key} : FIRST = {value}")
+    print("================================================\n")
 
+    # FOLLOW
     follows = define_follow.define_follow(tokentypes, firsts, start_symbol="S")
-
-    print(f" Follows da gramática:")
+    print("==================== FOLLOW ===================")
     for key, value in follows.items():
-        print(f" Simbolo {key} : first : {value}")
-    print("\n")
+        if not value == set():
+            print(f"  Símbolo {key} : FOLLOW = {value}")
+    print("================================================\n")
 
+    # SLR Table
     non_terminals = utils.get_non_terminals(gramatica)
     slr_table = SLRTable()
-
     slr_table.populate(estados, transicoes, follows, non_terminals)
 
-    print(f" Tabela SLR da gramática:")
+    print("==================== TABELA SLR ==================")
     print(format_slr_table(slr_table))
-    print("\n")
+    print("==================================================\n")
 
+    # Entrada (tokens)
     input = get_tokens_from_file(token_list)
+    print("==================== TOKENS DE ENTRADA ==================")
+    for item in input:
+        print(f"  {item}")
+    print("=========================================================\n")
 
+    # Análise sintática
     analysis_result = parser.LR_parsing(input, slr_table.table)
 
-    print(f" Lista de tokens em análise:")
-    for item in input:
-        print(item)
-    print("\n")
-
+    print("==================== RESULTADO ====================")
     if analysis_result:
-        print("A palavra pertence à linguagem!")
+        print("[OK] A palavra pertence à linguagem!")
     else:
-        print("Erro de análise.")
+        print("[X] Erro de análise.")
+    print("===================================================\n")
 
+    # Escreve os resultados em arquivos
+    write_in_files(firsts, follows, slr_table, analysis_result, estados, transicoes)
 
 if __name__ == "__main__":
+    utils.prepare_output_directory()
     main()
     sys.exit(0)
