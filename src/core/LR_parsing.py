@@ -14,9 +14,6 @@ def LR_parsing(token_list, action_dict, initial_state=0):
             input_dict[i] = token_list[i][1].lower()
     input_dict[i+1] = "$"
 
-    print("DEBUG ", input_dict)
-
-
     states_dict = {0: initial_state}
     states_dict_top = 0
     input_ptr = 0
