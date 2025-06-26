@@ -4,7 +4,6 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
-# import core.slr_table as slr_table
 from core.slr_table import SLRTable, Action
 import core.utils as utils
 import model.symbol_table as symbol_table
@@ -16,8 +15,29 @@ from core.utils import get_tokens_from_file, get_grammar_from_file
 
 def main():
 
-    rules_files = "inputs/main_rules.txt"
-    gramatica = get_grammar_from_file(rules_files)
+    gramatica = [
+        "S':== <S>",
+        "S:== <S> or <A>",
+        "S:== <A>",
+        "A:== <A> and <B>",
+        "A:== <B>",
+        "B:== not <B>",
+        "B:== lparen<S>rparen",
+        "B:== true",
+        "B:== false",
+    ]
+    tokens = [
+        ('not', 'PR'),
+        ('lparen', 'LPAREN'),
+        ('true', 'TRUE'),
+        ('or', 'PR'),
+        ('false', 'FALSE'),
+        ('rparen', 'RPAREN'),
+        ('and', 'PR'),
+        ('lparen', 'LPAREN'),
+        ('true', 'TRUE'),
+        ('rparen', 'RPAREN'),
+    ]
 
     tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
@@ -42,12 +62,8 @@ def main():
     print(f' Grámatica em análise:')
     for linha in gramatica:
         print(linha)
-
-    input_file = "inputs/tokens2.txt"
-    entrada = get_tokens_from_file(input_file)
-
-
-    resposta = parser.LR_parsing(entrada, slr_table.table)
+        
+    resposta = parser.LR_parsing(tokens, slr_table.table)
 
     if resposta:
         print("A palavra pertence à linguagem!")

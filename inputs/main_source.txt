@@ -1,7 +1,0 @@
-beg main;
-func menos -> x -> y;
-  ret x - y;
-func div -> _1x -> y;
-  ret x / y;
-end;
-identificador

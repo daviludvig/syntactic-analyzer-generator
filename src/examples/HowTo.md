@@ -17,5 +17,5 @@ python src/examples/<example>.py
 Exemplo:
 
 ```bash
-python src/examples/example_conversion.py
+python src/examples/example_LR_parsing.py
 ```
