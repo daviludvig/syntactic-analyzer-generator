@@ -7,4 +7,3 @@ B:== not <B>
 B:== lparen<S>rparen
 B:== true
 B:== false
-B:== id
