@@ -1,8 +1,8 @@
 <not, PR>
-<lparen, PR>
-<true, PR>
+<lparen, LPAREN>
+<julia, ID>
 <or, PR>
-<false, PR>
-<rparen, PR>
+<davi, ID>
+<rparen, RPAREN>
 <and, PR>
-<true, PR>
+<bruno, ID>
