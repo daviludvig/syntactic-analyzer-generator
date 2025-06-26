@@ -1,0 +1,8 @@
+<not, PR>
+<lparen, LPAREN>
+<julia, ID>
+<or, PR>
+<davi, ID>
+<rparen, RPAREN>
+<and, PR>
+<bruno, ID>

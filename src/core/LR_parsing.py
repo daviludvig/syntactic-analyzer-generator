@@ -1,7 +1,22 @@
 
 from core.slr_table import Action
 
-def LR_parsing(input_dict, action_dict, initial_state=0):
+def LR_parsing(token_list, action_dict, initial_state=0):
+
+    input_dict = {}
+
+    # Coloca input em dict
+    for i in range(len(token_list)):
+        try:
+            if token_list[i][1] == "PR":
+                # Seleciona o lexema associado
+                input_dict[i] = token_list[i][0]
+            else:
+                input_dict[i] = token_list[i][1].lower()
+        except:
+            print(f"Erro ao processar o token {i}: {token_list[i]}")
+    input_dict[i+1] = "$"
+
     states_dict = {0: initial_state}
     states_dict_top = 0
     input_ptr = 0

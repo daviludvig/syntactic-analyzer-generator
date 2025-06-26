@@ -1,8 +1,10 @@
+S':== <S>
 S:== <S> or <A>
 S:== <A>
 A:== <A> and <B>
 A:== <B>
-B:== not <B> 
-B:== ( <S> ) 
-B:== true 
+B:== not <B>
+B:== lparen<S>rparen
+B:== true
 B:== false
+B:== id

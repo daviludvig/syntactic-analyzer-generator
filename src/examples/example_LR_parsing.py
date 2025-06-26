@@ -4,27 +4,20 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__),'..')))
 
 import core.get_canonical_items as get_canonical_items
 import core.regex_parser as regex_parser
-import core.slr_table as slr_table
+# import core.slr_table as slr_table
+from core.slr_table import SLRTable, Action
 import core.utils as utils
 import model.symbol_table as symbol_table
 import core.define_first as define_first
 import core.define_follow as define_follow
 
 import core.LR_parsing as parser
+from core.utils import get_tokens_from_file, get_grammar_from_file
 
 def main():
 
-    gramatica = [
-        "S':== <S>",
-        "S:== <S> or <A>",
-        "S:== <A>",
-        "A:== <A> and <B>",
-        "A:== <B>",
-        "B:== not <B>",
-        "B:== lparen<S>rparen",
-        "B:== true",
-        "B:== false",
-    ]
+    rules_files = "inputs/main_rules.txt"
+    gramatica = get_grammar_from_file(rules_files)
 
     tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
@@ -42,46 +35,19 @@ def main():
     follows = define_follow.define_follow(tokentypes, firsts, start_symbol="S")
 
     non_terminals = utils.get_non_terminals(gramatica)
-    table = slr_table.SLRTable()
+    slr_table = SLRTable()
 
-    action_dict = {}
-
-    # Adiciona SHIFT, ACCEPT e GOTO na tabela SLR
-    for (origem, simbolo), destino in transicoes.items():
-        if (destino == slr_table.Action.ACCEPT ) and (simbolo == "$"):
-            # Caso simbolo seja final de sentença
-            action = slr_table.Action(slr_table.Action.ACCEPT, "acc")
-            action_dict[(origem, simbolo)] = action
-        elif simbolo not in non_terminals:
-            # Caso simbolo seja um terminal
-            action = slr_table.Action(slr_table.Action.SHIFT, destino)
-            action_dict[(origem, simbolo)] = action
-        elif simbolo in non_terminals:
-            # Caso simbolo seja um não terminal
-            action = slr_table.Action(slr_table.Action.GOTO, destino)
-            action_dict[(origem, simbolo)] = action
-
-
-    # Adiciona o REDUCE na tabela SLR
-    for i, estado in enumerate(estados):
-        for prod in estado:
-            if prod.regex[-1].type == symbol_table.RegexToken.SLR_DOT:
-                cabeca_follow = follows[prod.name]  # cabeca_follow é um set de terminais (follows da cabeca)
-
-                for simbolo in cabeca_follow:
-                    action = slr_table.Action(slr_table.Action.REDUCE, [prod.name, len(prod.regex[:-1])])
-                    action_dict[((i, simbolo))] = action
+    slr_table.populate(estados, transicoes, follows, non_terminals)
                     
     print(f' Grámatica em análise:')
     for linha in gramatica:
         print(linha)
-    
-    entrada = {0: 'not', 1: 'lparen', 2: 'true', 3: 'or', 4:'false', 5:'rparen', 6:'and', 7:'true', 8:'$'}
 
-    print(f' Entrada em análise:')
-    print(' '.join(str(palavra) for palavra in entrada.values()))
+    input_file = "inputs/tokens2.txt"
+    entrada = get_tokens_from_file(input_file)
 
-    resposta = parser.LR_parsing(entrada, action_dict)
+
+    resposta = parser.LR_parsing(entrada, slr_table.table)
 
     if resposta:
         print("A palavra pertence à linguagem!")
