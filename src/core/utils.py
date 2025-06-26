@@ -14,6 +14,26 @@ def file_exists(file_path: str) -> bool:
     """Verifica se um arquivo existe."""
     return os.path.isfile(file_path)
 
+def get_tokens_from_file(file_path: str) -> list[tuple[str, ...]]:
+    
+    def clean_token(token: str) -> str:
+        if token.startswith("<"):
+            return token[1:-1]
+        if token.endswith(">"):
+            return token[0:-1]
+        return token
+    
+    if not file_exists(file_path):
+        raise FileNotFoundError(f"O arquivo {file_path} não existe.")
+
+    tokens = []
+    for line in get_file_lines(file_path):
+        raw_tokens = line.split()
+        clean_tokens = [clean_token(token) for token in raw_tokens]
+        tokens.append(tuple(clean_tokens))
+
+    return tokens
+
 
 def prepare_output_directory(path: str = OUTPUT_PATH_DIR) -> None:
     """
