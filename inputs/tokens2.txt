@@ -1,0 +1,8 @@
+<not, PR>
+<lparen, PR>
+<true, PR>
+<or, PR>
+<false, PR>
+<rparen, PR>
+<and, PR>
+<true, PR>

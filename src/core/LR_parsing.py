@@ -9,9 +9,12 @@ def LR_parsing(token_list, action_dict, initial_state=0):
     for i in range(len(token_list)):
         if token_list[i][1] == "PR":
             # Seleciona o lexema associado
-            token_list[i] = token_list[i][0]
+            input_dict[i] = token_list[i][0]
         else:
-            token_list[i] = token_list[i][1].lower()
+            input_dict[i] = token_list[i][1].lower()
+    input_dict[i+1] = "$"
+
+    print("DEBUG ", input_dict)
 
 
     states_dict = {0: initial_state}

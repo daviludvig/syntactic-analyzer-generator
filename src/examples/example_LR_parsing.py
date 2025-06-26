@@ -11,20 +11,12 @@ import core.define_first as define_first
 import core.define_follow as define_follow
 
 import core.LR_parsing as parser
+from core.utils import get_tokens_from_file, get_grammar_from_file
 
 def main():
 
-    gramatica = [
-        "S':== <S>",
-        "S:== <S> or <A>",
-        "S:== <A>",
-        "A:== <A> and <B>",
-        "A:== <B>",
-        "B:== not <B>",
-        "B:== lparen<S>rparen",
-        "B:== true",
-        "B:== false",
-    ]
+    rules_files = "inputs/main_rules.txt"
+    gramatica = get_grammar_from_file(rules_files)
 
     tokentypes = regex_parser.get_regex_from_lines(gramatica)
 
@@ -75,11 +67,10 @@ def main():
     print(f' Grámatica em análise:')
     for linha in gramatica:
         print(linha)
-    
-    entrada = {0: 'not', 1: 'lparen', 2: 'true', 3: 'or', 4:'false', 5:'rparen', 6:'and', 7:'true', 8:'$'}
 
-    print(f' Entrada em análise:')
-    print(' '.join(str(palavra) for palavra in entrada.values()))
+    input_file = "inputs/tokens2.txt"
+    entrada = get_tokens_from_file(input_file)
+
 
     resposta = parser.LR_parsing(entrada, action_dict)
 

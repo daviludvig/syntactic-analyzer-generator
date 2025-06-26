@@ -34,6 +34,17 @@ def get_tokens_from_file(file_path: str) -> list[tuple[str, ...]]:
 
     return tokens
 
+def get_grammar_from_file(file_path:str) -> list[str]:
+
+    if not file_exists(file_path):
+        raise FileNotFoundError(f"O arquivo {file_path} não existe.")
+    
+    grammar = []
+    for line in get_file_lines(file_path):
+        grammar.append(line)
+    
+    return grammar
+
 
 def prepare_output_directory(path: str = OUTPUT_PATH_DIR) -> None:
     """
